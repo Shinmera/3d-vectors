@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8"/>
+    <title>3D-VECTORS</title>
+    <style type="text/css">
+      html{font-family: serif;}
+      code a{text-decoration: none;}
+      h1{display: inline-block; margin-bottom: 0;}
+      code{font-family: monospace;}
+      h4{display: inline-block; margin: 0; padding: 0;}
+      #symbol-index ul{list-style: none;}
+      .package li{margin-bottom: 20px;}
+      .package pre{margin: 0 0 0 10px; white-space: pre-wrap;}
+      .package .nicknames{font-weight: normal;}
+      table{margin: 20px;}
+      td{padding-bottom: 10px;}
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>3d-vectors</h1>
+      <span>1.0.0</span>
+      <p>A small utility library implementing basic 3d vector functionality.</p>
+    </header>
+    <div id="content">
+      <article>
+        <c:documentate>
+          <span><h2>About 3d-vectors</h2>
+
+<p>This is a simple library for 3D vectors. It contains most of the vector operations one would usually expect out of such a library and offers them both in non-modifying and modifying versions where applicable. It also tries to be efficient where plausible. Each vector is made up of a triplet of <code><a href="http://l1sp.org/cl/double-float">double-float</a></code>s, which should offer sufficient precision for the majority of scenarios.</p>
+</span>
+        </c:documentate>
+      </article>
+      <article>
+        
+          <h2>Copyright</h2>
+          <span>3d-vectors</span> is licensed under the <span><a href="https://tldrlegal.com/search?q=Artistic">Artistic</a></span> license.
+          
+            © <span>Nicolas Hafner &lt;shinmera@tymoon.eu&gt;</span>
+            .
+          
+          This library can be obtained on <a href="https://github.com/Shinmera/3d-vectors">https://github.com/Shinmera/3d-vectors</a>.
+        
+      </article>
+      
+        <article id="symbol-index">
+          <h2>Package Index</h2>
+          <ul><li class="package">
+              <h3>
+                <a name="3D-VECTORS" href="#3D-VECTORS">3D-VECTORS</a>
+                <span class="nicknames">(ORG.SHIRAKUMO.FLARE.VECTOR)</span>
+              </h3>
+              <ul><li>
+                  <a name="3D-VECTORS:+VX+"/>
+                  <article>
+                    <header class="constant">
+                      <span class="type">constant</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:+VX+" class="name">+VX+</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">()</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Constant vector for the unit in X direction.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:+VY+"/>
+                  <article>
+                    <header class="constant">
+                      <span class="type">constant</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:+VY+" class="name">+VY+</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">()</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Constant vector for the unit in Y direction.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:+VZ+"/>
+                  <article>
+                    <header class="constant">
+                      <span class="type">constant</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:+VZ+" class="name">+VZ+</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">()</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Constant vector for the unit in Z direction.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VEC"/>
+                  <article>
+                    <header class="class">
+                      <span class="type">class</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VEC" class="name">VEC</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">()</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Vector struct with three DOUBLE-FLOAT fields: VX, VY, VZ.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VX"/>
+                  <article>
+                    <header class="accessor">
+                      <span class="type">accessor</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VX" class="name">VX</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(INSTANCE)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns a double-float for the X component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VY"/>
+                  <article>
+                    <header class="accessor">
+                      <span class="type">accessor</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VY" class="name">VY</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(INSTANCE)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns a double-float for the Y component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VZ"/>
+                  <article>
+                    <header class="accessor">
+                      <span class="type">accessor</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VZ" class="name">VZ</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(INSTANCE)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns a double-float for the Z component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:NV*"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:NV*" class="name">NV*</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(VAL &amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Same as *, but modifies the first vector. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:NV+"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:NV+" class="name">NV+</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(VAL &amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Same as +, but modifies the first vector. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:NV-"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:NV-" class="name">NV-</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(VAL &amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Same as -, but modifies the first vector. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:NV/"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:NV/" class="name">NV/</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(VAL &amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Same as /, but modifies the first vector. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:NVABS"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:NVABS" class="name">NVABS</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(A)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Performs ABS on each component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:NVROT"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:NVROT" class="name">NVROT</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(V AXIS PHI)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Rotates the vector around AXIS by PHI rads. The axis has to be a unit vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:NVROTV"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:NVROTV" class="name">NVROTV</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(A B)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Rotates the vector A around each axis by the amount in B. The rotations are performed in the order of X, Y, Z.
+Note that rotation in 3D space is not commutative, so this function might not perform the rotation as you expected if you need the rotation to happen in a different order.
+
+See NVROT.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:NVUNIT"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:NVUNIT" class="name">NVUNIT</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(A)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Normalizes the vector into its unit form.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:V*"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V*" class="name">V*</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(&amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Same as *, but always returns a vector. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:V+"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V+" class="name">V+</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(&amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Same as +, but always returns a vector. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:V-"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V-" class="name">V-</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(VAL &amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Same as -, but always returns a vector. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:V."/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V." class="name">V.</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(A B)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns the dot product of the two vectors.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:V/"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V/" class="name">V/</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(VAL &amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Same as /, but always returns a vector. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:V1+"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V1+" class="name">V1+</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(V)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Same as 1+, but returns a new vector with each component increased by 1.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:V1-"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V1-" class="name">V1-</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(V)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Same as 1-, but returns a new vector with each component decreased by 1.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:V&lt;"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V&lt;" class="name">V&lt;</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(VAL &amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">This is the same as &lt;, but testing all vector fields simultaneously.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:V&lt;="/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V&lt;=" class="name">V&lt;=</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(VAL &amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">This is the same as &lt;=, but testing all vector fields simultaneously.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:V="/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V=" class="name">V=</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(VAL &amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">This is the same as =, but testing all vector fields simultaneously.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:V&gt;"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V&gt;" class="name">V&gt;</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(VAL &amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">This is the same as &gt;, but testing all vector fields simultaneously.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:V&gt;="/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V&gt;=" class="name">V&gt;=</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(VAL &amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">This is the same as &gt;=, but testing all vector fields simultaneously.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VABS"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VABS" class="name">VABS</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(A)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns a vector with each component having the ABS value.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VC"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VC" class="name">VC</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(A B)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns the cross product of the two vectors.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VCOPY"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VCOPY" class="name">VCOPY</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(INSTANCE)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Creates a copy of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VEC"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VEC" class="name">VEC</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(X Y Z)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Creates a new vector. The arguments passed must be REALs and will be coerced into DOUBLE-FLOATs.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VEC-P"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VEC-P" class="name">VEC-P</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(OBJECT)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns T if the argument is a vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VLENGTH"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VLENGTH" class="name">VLENGTH</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(V)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns the euclidean norm of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VROT"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VROT" class="name">VROT</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(V AXIS PHI)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns a vector rotated around AXIS by PHI rads. The axis has to be a unit vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VROTV"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VROTV" class="name">VROTV</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(A B)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns a vector of A rotated around each axis by the amount in B. The rotations are performed in the order of X, Y, Z.
+Note that rotation in 3D space is not commutative, so this function might not perform the rotation as you expected if you need the rotation to happen in a different order.
+
+See VROT.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VUNIT"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VUNIT" class="name">VUNIT</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(A)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns the unit vector form of the given vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VDECF"/>
+                  <article>
+                    <header class="macro">
+                      <span class="type">macro</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VDECF" class="name">VDECF</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(V &amp;OPTIONAL (DELTA 1))</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Decreases each field in the vector by DELTA.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VINCF"/>
+                  <article>
+                    <header class="macro">
+                      <span class="type">macro</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VINCF" class="name">VINCF</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(V &amp;OPTIONAL (DELTA 1))</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Increases each field in the vector by DELTA.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VSETF"/>
+                  <article>
+                    <header class="macro">
+                      <span class="type">macro</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VSETF" class="name">VSETF</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(&amp;REST QUADS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Same as SETF but for vectors. Requires three values per vector.
+Example: (setf v x y z 
+               w a b c)</pre>
+                  </article>
+                </li></ul>
+            </li></ul>
+        </article>
+      
+    </div>
+  </body>
+</html>
