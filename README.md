@@ -1,0 +1,2 @@
+## About 3d-vectors
+This is a simple library for 3D vectors. It contains most of the vector operations one would usually expect out of such a library and offers them both in non-modifying and modifying versions where applicable. It also tries to be efficient where plausible. Each vector is made up of a triplet of `double-float`s, which should offer sufficient precision for the majority of scenarios.
