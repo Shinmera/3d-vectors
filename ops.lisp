@@ -33,10 +33,10 @@
 (defmacro define-vector-constant (name x y &optional (z 0))
   `(defconstant ,name (cond ((not (boundp ',name))
                              (vec ,x ,y ,z))
-                            ((v= ,name (vec ,x ,y ,z))
-                             ,name)
+                            ((v= (symbol-value ',name) (vec ,x ,y ,z))
+                             (symbol-value ',name))
                             (T (error "Attempting to redefine constant vector ~a with value ~a to ~a."
-                                      ',name ,name (vec ,x ,y ,z))))))
+                                      ',name (symbol-value ',name) (vec ,x ,y ,z))))))
 
 (define-vector-constant +vx+ 1 0 0)
 (define-vector-constant +vy+ 0 1 0)
