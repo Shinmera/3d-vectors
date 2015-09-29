@@ -29,6 +29,33 @@
           <span><h2>About 3d-vectors</h2>
 
 <p>This is a simple library for 3D vectors. It contains most of the vector operations one would usually expect out of such a library and offers them both in non-modifying and modifying versions where applicable. It also tries to be efficient where plausible. Each vector is made up of a triplet of <code><a href="http://l1sp.org/cl/double-float">double-float</a></code>s, which should offer sufficient precision for the majority of scenarios.</p>
+
+<h2>How To</h2>
+
+<p>Load it through ASDF or Quicklisp</p>
+
+<pre><code>(ql:quickload :3d-vectors)
+(<a href="http://l1sp.org/cl/use-package">use-package</a> :3d-vectors)
+</code></pre>
+
+<p>Create a vector:</p>
+
+<pre><code>(<a href="#3D-VECTORS:VEC">vec</a> 0 0 0)
+</code></pre>
+
+<p>Vectors always use a triplet of <code><a href="http://l1sp.org/cl/double-float">double-float</a></code>s. All operations should accept <code><a href="http://l1sp.org/cl/real">real</a></code> numbers though, for convenience. All vector operations will return a <code><a href="#3D-VECTORS:VEC">vec</a></code> and are prefixed with a <code>v</code> to allow importing of the package. </p>
+
+<pre><code>(<a href="#3D-VECTORS:V+">v+</a> 1 2 3 (<a href="#3D-VECTORS:VEC">vec</a> 4 5 6))
+</code></pre>
+
+<p>3d-vectors implements pretty much all vector operations you might need, including comparators, dot and cross product, and rotation. There's also modifying variants of all operators, which have the same name, except they are prefixed by an <code>n</code>.</p>
+
+<pre><code>(<a href="http://l1sp.org/cl/let">let</a> ((v (<a href="#3D-VECTORS:VEC">vec</a> 0 0 0)))
+  (<a href="#3D-VECTORS:NV*">nv*</a> (<a href="#3D-VECTORS:NV+">nv+</a> v (<a href="#3D-VECTORS:VEC">vec</a> 1 2 3)) 3)
+  v)
+</code></pre>
+
+<p><code><a href="#3D-VECTORS:VEC">vec</a></code>s are dumpable, meaning you can insert them as literals into your code and they will be properly saved to and restored from a FASL.</p>
 </span>
         </c:documentate>
       </article>
@@ -533,7 +560,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VDECF" class="name">VDECF</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(V &amp;OPTIONAL (DELTA 1))</span>
+                        <span class="arguments">(&amp;ENVIRONMENT ENV V &amp;OPTIONAL (DELTA 1))</span>
                       </code>
                     </header>
                     <pre class="docstring">Decreases each field in the vector by DELTA.</pre>
@@ -546,7 +573,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VINCF" class="name">VINCF</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(V &amp;OPTIONAL (DELTA 1))</span>
+                        <span class="arguments">(&amp;ENVIRONMENT ENV V &amp;OPTIONAL (DELTA 1))</span>
                       </code>
                     </header>
                     <pre class="docstring">Increases each field in the vector by DELTA.</pre>
@@ -559,7 +586,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VSETF" class="name">VSETF</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(&amp;REST QUADS)</span>
+                        <span class="arguments">(&amp;ENVIRONMENT ENV &amp;REST QUADS)</span>
                       </code>
                     </header>
                     <pre class="docstring">Same as SETF but for vectors. Requires three values per vector.
