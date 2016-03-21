@@ -185,14 +185,14 @@
           (* (vy a) (vx b)))))
 
 (declaim (inline vabs))
-(declaim (ftype (function (vec) vec) vx))
+(declaim (ftype (function (vec) vec) vabs))
 (defun vabs (a)
   (vec (abs (vx a))
        (abs (vy a))
        (abs (vz a))))
 
 (declaim (inline nvabs))
-(declaim (ftype (function (vec) vec) nvx))
+(declaim (ftype (function (vec) vec) nvabs))
 (defun nvabs (a)
   (setf (vx a) (abs (vx a))
         (vy a) (abs (vy a))
