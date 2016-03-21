@@ -7,21 +7,23 @@
 (in-package #:org.shirakumo.flare.vector)
 
 (defstruct (vec (:conc-name NIL)
-                (:constructor %vec (vx vy vz))
+                (:constructor %vec (%vx %vy %vz))
                 (:copier vcopy)
                 (:predicate vec-p))
-  (vx 0 :type double-float)
-  (vy 0 :type double-float)
-  (vz 0 :type double-float))
+  (%vx 0 :type double-float)
+  (%vy 0 :type double-float)
+  (%vz 0 :type double-float))
 
-(defmethod print-object ((v vec) stream)
-  (if (eql (type-of v) 'vec)
-      (print (make-load-form v) stream)
-      (call-next-method)))
+(defmacro define-vec-accessor (name accessor)
+  `(progn
+     (setf (fdefinition ',name)
+           (fdefinition ',accessor))
+     (defsetf ,name (vec) (value)
+       `(setf (,',accessor ,vec) (float ,value 0.0d0)))))
 
-(defmethod make-load-form ((v vec) &optional env)
-  (declare (ignore env))
-  `(vec ,(vx v) ,(vy v) ,(vz v)))
+(define-vec-accessor vx %vx)
+(define-vec-accessor vy %vy)
+(define-vec-accessor vz %vz)
 
 (declaim (inline vec))
 (declaim (ftype (function (number number number) vec) vec))
@@ -43,3 +45,12 @@
     (if (not (and (eq nx x) (eq ny y) (eq nz z)))
         `(%vec ,nx ,ny ,nz)
         whole)))
+
+(defmethod print-object ((v vec) stream)
+  (if (eql (type-of v) 'vec)
+      (print (make-load-form v) stream)
+      (call-next-method)))
+
+(defmethod make-load-form ((v vec) &optional env)
+  (declare (ignore env))
+  `(vec ,(vx v) ,(vy v) ,(vz v)))
