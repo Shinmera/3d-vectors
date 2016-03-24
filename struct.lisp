@@ -6,15 +6,17 @@
 
 (in-package #:org.shirakumo.flare.vector)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar *float-type* 'double-float))
+
 (declaim (inline ensure-float))
-(declaim (ftype (function (real) double-float)))
+(declaim (ftype (function (real) #.*float-type*)))
 (defun ensure-float (thing)
-  (coerce thing 'double-float))
+  (coerce thing '#.*float-type*))
 
 (defun ensure-float-param (val env)
   (if (constantp val env)
       (typecase val
-        (double-float val)
         (real (ensure-float val))
         (T `(load-time-value (ensure-float ,val))))
       `(ensure-float ,val)))
@@ -23,9 +25,9 @@
                 (:constructor %vec (%vx %vy %vz))
                 (:copier vcopy)
                 (:predicate vec-p))
-  (%vx 0 :type double-float)
-  (%vy 0 :type double-float)
-  (%vz 0 :type double-float))
+  (%vx 0 :type #.*float-type*)
+  (%vy 0 :type #.*float-type*)
+  (%vz 0 :type #.*float-type*))
 
 (defmacro define-vec-accessor (name accessor)
   `(progn

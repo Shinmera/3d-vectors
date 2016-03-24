@@ -43,7 +43,7 @@
 (define-vector-constant +vz+ 0 0 1)
 
 (declaim (inline vlength))
-(declaim (ftype (function (vec) double-float) vlength))
+(declaim (ftype (function (vec) #.*float-type*) vlength))
 (defun vlength (v)
   (sqrt (+ (expt (vx v) 2)
            (expt (vy v) 2)
@@ -74,7 +74,7 @@
 
 (defmacro %vecop-internal (op el x y z)
   `(etypecase ,el
-     (double-float
+     (#.*float-type*
       (setf ,x (,op ,el ,x))
       (setf ,y (,op ,el ,y))
       (setf ,z (,op ,el ,z)))
@@ -88,60 +88,63 @@
       (setf ,z (,op (vz ,el) ,z)))))
 
 (defmacro define-vecop1 (name init op)
-  `(progn
-     (declaim (inline ,name))
-     (declaim (ftype (function (&rest (or vec real)) vec) ,name))
-     (defun ,name (&rest vals)
-       (let ((x ,init) (y ,init) (z ,init))
-         (declare (type double-float x y z))
-         (dolist (v vals (vec x y z))
-           (%vecop-internal ,op v x y z))))))
+  (let ((init (ensure-float init)))
+    `(progn
+       (declaim (inline ,name))
+       (declaim (ftype (function (&rest (or vec real)) vec) ,name))
+       (defun ,name (&rest vals)
+         (let ((x ,init) (y ,init) (z ,init))
+           (declare (type #.*float-type* x y z))
+           (dolist (v vals (vec x y z))
+             (%vecop-internal ,op v x y z)))))))
 
 (defmacro define-vecop2 (name init op comp)
-  `(progn
-     (declaim (inline ,name))
-     (declaim (ftype (function ((or vec real) &rest (or vec real)) vec) ,name))
-     (defun ,name (val &rest vals)
-       (let ((x ,init) (y ,init) (z ,init))
-         (declare (type double-float x y z))
-         (cond (vals
-                (dolist (v vals)
-                  (%vecop-internal ,comp v x y z))
-                (%vecop-internal ,op val x y z))
-               (T
-                (%vecop-internal ,comp val x y z)
-                (setf x (,op x) y (,op y) z (,op z))))
-         (vec x y z)))))
+  (let ((init (ensure-float init)))
+    `(progn
+       (declaim (inline ,name))
+       (declaim (ftype (function ((or vec real) &rest (or vec real)) vec) ,name))
+       (defun ,name (val &rest vals)
+         (let ((x ,init) (y ,init) (z ,init))
+           (declare (type #.*float-type* x y z))
+           (cond (vals
+                  (dolist (v vals)
+                    (%vecop-internal ,comp v x y z))
+                  (%vecop-internal ,op val x y z))
+                 (T
+                  (%vecop-internal ,comp val x y z)
+                  (setf x (,op x) y (,op y) z (,op z))))
+           (vec x y z))))))
 
 (defmacro define-nvecop (name init op &optional comp)
-  `(progn
-     (declaim (inline ,name))
-     (declaim (ftype (function (vec &rest (or vec real)) vec) ,name))
-     (defun ,name (val &rest vals)
-       (cond (vals
-              ,(if comp
-                   `(let ((x ,init) (y ,init) (z ,init))
-                      (declare (type double-float x y z))
-                      (dolist (v vals)
-                        (%vecop-internal ,comp v x y z))
-                      (vmodf val ,op x y z))
-                   `(dolist (v vals)
-                      (etypecase v
-                        (real (vmodf val ,op v v v))
-                        (vec (vmodf val ,op (vx v) (vy v) (vz v)))))))
-             ,@(when comp
-                 `((T
-                     (vmodf val ,op)))))
-       val)))
+  (let ((init (ensure-float init)))
+    `(progn
+       (declaim (inline ,name))
+       (declaim (ftype (function (vec &rest (or vec real)) vec) ,name))
+       (defun ,name (val &rest vals)
+         (cond (vals
+                ,(if comp
+                     `(let ((x ,init) (y ,init) (z ,init))
+                        (declare (type #.*float-type* x y z))
+                        (dolist (v vals)
+                          (%vecop-internal ,comp v x y z))
+                        (vmodf val ,op x y z))
+                     `(dolist (v vals)
+                        (etypecase v
+                          (real (vmodf val ,op v v v))
+                          (vec (vmodf val ,op (vx v) (vy v) (vz v)))))))
+               ,@(when comp
+                   `((T
+                      (vmodf val ,op)))))
+         val))))
 
-(define-vecop1 v+ 0.0d0 +)
-(define-vecop2 v- 0.0d0 - +)
-(define-vecop1 v* 1.0d0 *)
-(define-vecop2 v/ 1.0d0 / *)
-(define-nvecop nv+ 0.0d0 +)
-(define-nvecop nv- 0.0d0 - +)
-(define-nvecop nv* 1.0d0 *)
-(define-nvecop nv/ 1.0d0 / *)
+(define-vecop1 v+ 0 +)
+(define-vecop2 v- 0 - +)
+(define-vecop1 v* 1 *)
+(define-vecop2 v/ 1 / *)
+(define-nvecop nv+ 0 +)
+(define-nvecop nv- 0 - +)
+(define-nvecop nv* 1 *)
+(define-nvecop nv/ 1 / *)
 
 (declaim (inline v1+))
 (declaim (ftype (function (vec) vec) v1+))
@@ -168,7 +171,7 @@
        (vmodf ,v - ,d ,d ,d))))
 
 (declaim (inline v.))
-(declaim (ftype (function (vec vec) double-float) v.))
+(declaim (ftype (function (vec vec) #.*float-type*) v.))
 (defun v. (a b)
   (+ (* (vx a) (vx b))
      (* (vy a) (vy b))
