@@ -11,6 +11,14 @@
 (defun ensure-float (thing)
   (coerce thing 'double-float))
 
+(defun ensure-float-param (val env)
+  (if (constantp val env)
+      (typecase val
+        (double-float val)
+        (real (ensure-float val))
+        (T `(load-time-value (ensure-float ,val))))
+      `(ensure-float ,val)))
+
 (defstruct (vec (:conc-name NIL)
                 (:constructor %vec (%vx %vy %vz))
                 (:copier vcopy)
@@ -34,14 +42,6 @@
 (declaim (ftype (function (number number number) vec) vec))
 (defun vec (x y z)
   (%vec (ensure-float x) (ensure-float y) (ensure-float z)))
-
-(defun ensure-float-param (val env)
-  (if (constantp val env)
-      (typecase val
-        (double-float val)
-        (real (ensure-float val))
-        (T `(load-time-value (ensure-float ,val))))
-      `(ensure-float ,val)))
 
 (define-compiler-macro vec (&whole whole &environment env x y z)
   (let ((nx (ensure-float-param x env))
