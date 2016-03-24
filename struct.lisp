@@ -48,7 +48,7 @@
 
 (defmethod print-object ((v vec) stream)
   (if (eql (type-of v) 'vec)
-      (print (make-load-form v) stream)
+      (write (make-load-form v) :stream stream)
       (call-next-method)))
 
 (defmethod make-load-form ((v vec) &optional env)
