@@ -20,15 +20,15 @@
   <body>
     <header>
       <h1>3d-vectors</h1>
-      <span>1.0.0</span>
-      <p>A small utility library implementing basic 3d vector functionality.</p>
+      <span class="version">2.0.0</span>
+      <p class="description">A small utility library implementing basic 3d vector functionality.</p>
     </header>
     <div id="content">
       <article>
-        <c:documentate>
+        
           <span><h2>About 3d-vectors</h2>
 
-<p>This is a simple library for 3D vectors. It contains most of the vector operations one would usually expect out of such a library and offers them both in non-modifying and modifying versions where applicable. It also tries to be efficient where plausible. Each vector is made up of a triplet of <code><a href="http://l1sp.org/cl/double-float">double-float</a></code>s, which should offer sufficient precision for the majority of scenarios.</p>
+<p>This is a simple library for 3D vectors. It contains most of the vector operations one would usually expect out of such a library and offers them both in non-modifying and modifying versions where applicable. It also tries to be efficient where plausible. Each vector is made up of a triplet of <code><a href="http://l1sp.org/cl/float">float</a></code>s, which by default are <code><a href="http://l1sp.org/cl/single-float">single-float</a></code>s, as they do not require value boxing on most modern systems and compilers.</p>
 
 <h2>How To</h2>
 
@@ -43,7 +43,7 @@
 <pre><code>(<a href="#3D-VECTORS:VEC">vec</a> 0 0 0)
 </code></pre>
 
-<p>Vectors always use a triplet of <code><a href="http://l1sp.org/cl/double-float">double-float</a></code>s. All operations should accept <code><a href="http://l1sp.org/cl/real">real</a></code> numbers though, for convenience. All vector operations will return a <code><a href="#3D-VECTORS:VEC">vec</a></code> and are prefixed with a <code>v</code> to allow importing of the package. </p>
+<p>Vectors always use a triplet of <code><a href="http://l1sp.org/cl/float">float</a></code>s. All operations should accept <code><a href="http://l1sp.org/cl/real">real</a></code> numbers though, for convenience. All vector operations will return a <code><a href="#3D-VECTORS:VEC">vec</a></code> and are prefixed with a <code>v</code> to allow importing of the package. </p>
 
 <pre><code>(<a href="#3D-VECTORS:V+">v+</a> 1 2 3 (<a href="#3D-VECTORS:VEC">vec</a> 4 5 6))
 </code></pre>
@@ -56,8 +56,10 @@
 </code></pre>
 
 <p><code><a href="#3D-VECTORS:VEC">vec</a></code>s are dumpable, meaning you can insert them as literals into your code and they will be properly saved to and restored from a FASL.</p>
+
+<p>If you require higher precision than <code><a href="http://l1sp.org/cl/single-float">single-float</a></code>s ensure, you can add <code>:3d-vectors-double-floats</code> to <code><a href="http://l1sp.org/cl/*features*">*features*</a></code> and recompile the library <code>(asdf:compile-system :3d-vectors :force T)</code>. Similarly, if you want to switch back to <code><a href="http://l1sp.org/cl/single-float">single-float</a></code>s, you can remove the feature and recompile. Both at the same time is not currently possible as it would increase complexity in the library and make certain operations much slower.</p>
 </span>
-        </c:documentate>
+        
       </article>
       <article>
         
@@ -129,45 +131,6 @@
                       </code>
                     </header>
                     <pre class="docstring">Vector struct with three DOUBLE-FLOAT fields: VX, VY, VZ.</pre>
-                  </article>
-                </li><li>
-                  <a name="3D-VECTORS:VX"/>
-                  <article>
-                    <header class="accessor">
-                      <span class="type">accessor</span>
-                      <code>
-                        <h4><a href="#3D-VECTORS:VX" class="name">VX</a></h4>
-                        <span class="qualifiers"></span>
-                        <span class="arguments">(INSTANCE)</span>
-                      </code>
-                    </header>
-                    <pre class="docstring">Returns a double-float for the X component of the vector.</pre>
-                  </article>
-                </li><li>
-                  <a name="3D-VECTORS:VY"/>
-                  <article>
-                    <header class="accessor">
-                      <span class="type">accessor</span>
-                      <code>
-                        <h4><a href="#3D-VECTORS:VY" class="name">VY</a></h4>
-                        <span class="qualifiers"></span>
-                        <span class="arguments">(INSTANCE)</span>
-                      </code>
-                    </header>
-                    <pre class="docstring">Returns a double-float for the Y component of the vector.</pre>
-                  </article>
-                </li><li>
-                  <a name="3D-VECTORS:VZ"/>
-                  <article>
-                    <header class="accessor">
-                      <span class="type">accessor</span>
-                      <code>
-                        <h4><a href="#3D-VECTORS:VZ" class="name">VZ</a></h4>
-                        <span class="qualifiers"></span>
-                        <span class="arguments">(INSTANCE)</span>
-                      </code>
-                    </header>
-                    <pre class="docstring">Returns a double-float for the Z component of the vector.</pre>
                   </article>
                 </li><li>
                   <a name="3D-VECTORS:NV*"/>
@@ -553,6 +516,45 @@ See VROT.</pre>
                     <pre class="docstring">Returns the unit vector form of the given vector.</pre>
                   </article>
                 </li><li>
+                  <a name="3D-VECTORS:VX"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VX" class="name">VX</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(INSTANCE)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns a double-float for the X component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VY"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VY" class="name">VY</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(INSTANCE)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns a double-float for the Y component of the vector.</pre>
+                  </article>
+                </li><li>
+                  <a name="3D-VECTORS:VZ"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:VZ" class="name">VZ</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(INSTANCE)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns a double-float for the Z component of the vector.</pre>
+                  </article>
+                </li><li>
                   <a name="3D-VECTORS:VDECF"/>
                   <article>
                     <header class="macro">
@@ -560,7 +562,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VDECF" class="name">VDECF</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(&amp;ENVIRONMENT ENV V &amp;OPTIONAL (DELTA 1))</span>
+                        <span class="arguments">(V &amp;OPTIONAL (DELTA 1))</span>
                       </code>
                     </header>
                     <pre class="docstring">Decreases each field in the vector by DELTA.</pre>
@@ -573,7 +575,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VINCF" class="name">VINCF</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(&amp;ENVIRONMENT ENV V &amp;OPTIONAL (DELTA 1))</span>
+                        <span class="arguments">(V &amp;OPTIONAL (DELTA 1))</span>
                       </code>
                     </header>
                     <pre class="docstring">Increases each field in the vector by DELTA.</pre>
@@ -586,7 +588,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VSETF" class="name">VSETF</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(&amp;ENVIRONMENT ENV &amp;REST QUADS)</span>
+                        <span class="arguments">(&amp;REST QUADS)</span>
                       </code>
                     </header>
                     <pre class="docstring">Same as SETF but for vectors. Requires three values per vector.
