@@ -55,9 +55,9 @@
   (let ((v (gensym "VEC")))
     `(progn
        ,@(loop for (vec x y z) on quads by #'cddddr
-               do (setf x (ensure-double-float-param x env)
-                        y (ensure-double-float-param y env)
-                        z (ensure-double-float-param z env))
+               do (setf x (ensure-float-param x env)
+                        y (ensure-float-param y env)
+                        z (ensure-float-param z env))
                collect `(let ((,v ,vec))
                           (psetf (vx ,v) ,x
                                  (vy ,v) ,y
@@ -159,12 +159,12 @@
 
 (defmacro vincf (&environment env v &optional (delta 1))
   (let ((d (gensym "DELTA")))
-    `(let ((,d ,(ensure-double-float-param delta env)))
+    `(let ((,d ,(ensure-float-param delta env)))
        (vmodf ,v + ,d ,d ,d))))
 
 (defmacro vdecf (&environment env v &optional (delta 1))
   (let ((d (gensym "DELTA")))
-    `(let ((,d ,(ensure-double-float-param delta env)))
+    `(let ((,d ,(ensure-float-param delta env)))
        (vmodf ,v - ,d ,d ,d))))
 
 (declaim (inline v.))

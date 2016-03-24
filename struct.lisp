@@ -6,6 +6,11 @@
 
 (in-package #:org.shirakumo.flare.vector)
 
+(declaim (inline ensure-float))
+(declaim (ftype (function (real) double-float)))
+(defun ensure-float (thing)
+  (coerce thing 'double-float))
+
 (defstruct (vec (:conc-name NIL)
                 (:constructor %vec (%vx %vy %vz))
                 (:copier vcopy)
@@ -19,7 +24,7 @@
      (setf (fdefinition ',name)
            (fdefinition ',accessor))
      (defsetf ,name (vec) (value)
-       `(setf (,',accessor ,vec) (float ,value 0.0d0)))))
+       `(setf (,',accessor ,vec) (ensure-float ,value)))))
 
 (define-vec-accessor vx %vx)
 (define-vec-accessor vy %vy)
@@ -28,20 +33,20 @@
 (declaim (inline vec))
 (declaim (ftype (function (number number number) vec) vec))
 (defun vec (x y z)
-  (%vec (float x 0.0d0) (float y 0.0d0) (float z 0.0d0)))
+  (%vec (ensure-float x) (ensure-float y) (ensure-float z)))
 
-(defun ensure-double-float-param (val env)
+(defun ensure-float-param (val env)
   (if (constantp val env)
       (typecase val
         (double-float val)
-        (real (float val 0.0d0))
-        (T `(load-time-value (float ,val 0.0d0))))
-      `(float ,val 0.0d0)))
+        (real (ensure-float val))
+        (T `(load-time-value (ensure-float ,val))))
+      `(ensure-float ,val)))
 
 (define-compiler-macro vec (&whole whole &environment env x y z)
-  (let ((nx (ensure-double-float-param x env))
-        (ny (ensure-double-float-param y env))
-        (nz (ensure-double-float-param z env)))
+  (let ((nx (ensure-float-param x env))
+        (ny (ensure-float-param y env))
+        (nz (ensure-float-param z env)))
     (if (not (and (eq nx x) (eq ny y) (eq nz z)))
         `(%vec ,nx ,ny ,nz)
         whole)))
