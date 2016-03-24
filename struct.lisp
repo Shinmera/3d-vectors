@@ -6,8 +6,11 @@
 
 (in-package #:org.shirakumo.flare.vector)
 
+#+3d-vectors-double-floats (pushnew :3d-vectors-double-floats *features*)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *float-type* 'double-float))
+  (defvar *float-type*
+    #+3d-vectors-double-floats 'double-float
+    #-3d-vectors-double-floats 'single-float))
 
 (declaim (inline ensure-float))
 (declaim (ftype (function (real) #.*float-type*)))
