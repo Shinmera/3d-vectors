@@ -6,22 +6,33 @@
 
 (in-package #:org.shirakumo.flare.vector)
 
+(defmacro with-vec ((x y z) val &body body)
+  (let ((valvar (gensym "VAL")))
+    `(let ((,valvar ,val) ,x ,y ,z)
+       (etypecase ,valvar
+         (real (setf ,x ,valvar ,y ,valvar ,z ,valvar))
+         (vec (setf ,x (vx ,valvar) ,y (vy ,valvar) ,z (vz ,valvar))))
+       ,@body)))
+
 (defmacro define-veccomp (name op)
   `(progn
      (declaim (inline ,name))
      (declaim (ftype (function ((or vec real) &rest (or vec real)) boolean) ,name))
      (defun ,name (val &rest vals)
-       (let (x y z)
-         (etypecase val
-           (real (setf x val y val z val))
-           (vec (setf x (vx val) y (vy val) z (vz val))))
+       (with-vec (x y z) val
          (dolist (val vals T)
-           (unless (etypecase val
-                     (real (and (,op x val) (,op y val) (,op z val)
-                                (setf x val y val z val)))
-                     (vec (and (,op x (vx val)) (,op y (vy val)) (,op z (vz val))
-                               (setf x (vx val) y (vy val) z (vz val)))))
-             (return-from ,name NIL)))))))
+           (with-vec (bx by bz) val
+             (unless (and (,op x bx) (,op y by) (,op z by))
+               (return-from ,name NIL))))))
+     (define-compiler-macro ,name (&whole whole val &rest vals)
+       (let ((ax (gensym "AX")) (ay (gensym "AY")) (az (gensym "AZ"))
+             (bx (gensym "BX")) (by (gensym "BY")) (bz (gensym "BZ")))
+         (case (length vals)
+           (0 T)
+           (1 `(with-vec (,ax ,ay ,az) ,val
+                 (with-vec (,bx ,by ,bz) ,(first vals)
+                   (and (,',op ,ax ,bx) (,',op ,ay ,by) (,',op ,az ,bz)))))
+           (2 whole))))))
 
 (define-veccomp v= =)
 (define-veccomp v/= /=)
