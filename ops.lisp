@@ -41,6 +41,30 @@
 (define-veccomp v> >)
 (define-veccomp v>= >=)
 
+(defmacro define-vecreduce (name op)
+  `(progn
+     (declaim (inline ,name))
+     (declaim (ftype (function ((or vec real) &rest (or vec real)) vec) ,name))
+     (defun ,name (val &rest vals)
+       (with-vec (x y z) val
+         (dolist (val vals (vec x y z))
+           (with-vec (bx by bz) val
+             (setf x (,op x bx)
+                   y (,op y by)
+                   z (,op z bz))))))
+     (define-compiler-macro ,name (&whole whole val &rest vals)
+       (let ((ax (gensym "AX")) (ay (gensym "AY")) (az (gensym "AZ"))
+             (bx (gensym "BX")) (by (gensym "BY")) (bz (gensym "BZ")))
+         (case (length vals)
+           (0 `(with-vec (,ax ,ay ,az) ,val (vec ,ax ,ay ,az)))
+           (1 `(with-vec (,ax ,ay ,az) ,val
+                 (with-vec (,bx ,by ,bz) ,(first vals)
+                   (vec (,',op ,ax ,bx) (,',op ,ay ,by) (,',op ,az ,bz)))))
+           (2 whole))))))
+
+(define-vecreduce vmin min)
+(define-vecreduce vmax max)
+
 (defmacro define-vector-constant (name x y &optional (z 0))
   `(defconstant ,name (cond ((not (boundp ',name))
                              (vec ,x ,y ,z))
@@ -207,11 +231,11 @@
 
 (declaim (inline nvabs))
 (declaim (ftype (function (vec) vec) nvabs))
-(defun nvabs (a)
-  (setf (vx a) (abs (vx a))
-        (vy a) (abs (vy a))
-        (vz a) (abs (vz a)))
-  a)
+(defun nvabs (vec)
+  (setf (vx vec) (abs (vx vec))
+        (vy vec) (abs (vy vec))
+        (vz vec) (abs (vz vec)))
+  vec)
 
 (declaim (inline vunit))
 (declaim (ftype (function (vec) vec) vunit))
@@ -220,8 +244,56 @@
 
 (declaim (inline nvunit))
 (declaim (ftype (function (vec) vec) nvunit))
-(defun nvunit (a)
-  (nv/ a (vlength a)))
+(defun nvunit (vec)
+  (nv/ vec (vlength vec)))
+
+(declaim (inline vscale))
+(declaim (ftype (function (vec real) vec) vscale))
+(defun vscale (a length)
+  (nv* (vunit a) length))
+
+(declaim (inline nvscale))
+(declaim (ftype (function (vec real) vec) vscale))
+(defun nvscale (vec length)
+  (nv* (nvunit vec) length))
+
+(declaim (inline vclamp))
+(declaim (ftype (function ((or vec real) (or vec real) (or vec real)) vec) vclamp))
+(defun vclamp (lower a upper)
+  (with-vec (lx ly lz) lower
+    (with-vec (x y z) a
+      (with-vec (ux uy uz) upper
+        (vec (min ux (max lx x))
+             (min uy (max ly y))
+             (min uz (max lz z)))))))
+
+(declaim (inline nvclamp))
+(declaim (ftype (function ((or vec real) vec (or vec real))) nvclamp))
+(defun nvclamp (lower vec upper)
+  (with-vec (lx ly lz) lower
+    (with-vec (ux uy uz) upper
+      (setf (vx vec) (min ux (max lx (vx vec)))
+            (vy vec) (min uy (max ly (vy vec)))
+            (vz vec) (min uz (max lz (vz vec))))
+      a)))
+
+(declaim (inline vlimit))
+(declaim (ftype (function ((or vec real) (or vec real)) vec) vlimit))
+(defun vlimit (a limit)
+  (with-vec (x y z) a
+    (with-vec (ux uy uz) limit
+      (vec (min ux (max (- ux) x))
+           (min uy (max (- uy) y))
+           (min uz (max (- uz) z))))))
+
+(declaim (inline nvlimit))
+(declaim (ftype (function (vec (or vec real)) vec) nvlimit))
+(defun nvlimit (vec limit)
+  (with-vec (ux uy uz) limit
+    (setf (vx vec) (min ux (max (- ux) (vx vec)))
+          (vy vec) (min uy (max (- uy) (vy vec)))
+          (vz vec) (min uz (max (- uz) (vz vec))))
+    a))
 
 (defmacro %vecrot-internal (&body body)
   ;; https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula

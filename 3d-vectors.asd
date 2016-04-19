@@ -6,7 +6,7 @@
 
 (in-package #:cl-user)
 (asdf:defsystem 3d-vectors
-  :version "2.0.0"
+  :version "2.1.0"
   :license "Artistic"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"

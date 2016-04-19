@@ -15,6 +15,8 @@
    #:v<=
    #:v>
    #:v>=
+   #:vmin
+   #:vmax
    #:+vx+
    #:+vy+
    #:+vz+
@@ -38,6 +40,12 @@
    #:nvabs
    #:vunit
    #:nvunit
+   #:vscale
+   #:nvscale
+   #:vclamp
+   #:nvclamp
+   #:vlimit
+   #:nvlimit
    #:vrot
    #:nvrot
    #:vrotv
