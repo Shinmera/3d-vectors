@@ -10,6 +10,7 @@
   (:use #:cl)
   ;; ops.lisp
   (:export
+   #:with-vec
    #:v=
    #:v<
    #:v<=

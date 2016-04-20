@@ -26,6 +26,8 @@ Author: Nicolas Hafner <shinmera@tymoon.eu>
 
   (vec "Creates a new vector. The arguments passed must be REALs and will be coerced into DOUBLE-FLOATs.")
 
+  (with-vec "Binds each component of the vector to the specified variable.")
+
   (v= "This is the same as =, but testing all vector fields simultaneously.")
   (v/= "This is the same as /=, but testing all vector fields simultaneously.")
   (v< "This is the same as <, but testing all vector fields simultaneously.")
