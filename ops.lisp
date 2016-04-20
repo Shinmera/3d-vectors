@@ -10,8 +10,9 @@
   (let ((valvar (gensym "VAL")))
     `(let ((,valvar ,val) ,x ,y ,z)
        (etypecase ,valvar
-         (real (setf ,valvar (ensure-float ,valvar))
-          (setf ,x ,valvar ,y ,valvar ,z ,valvar))
+         (real (let ((,valvar (ensure-float ,valvar)))
+                 (declare (type ,*float-type* ,valvar))
+                 (setf ,x ,valvar ,y ,valvar ,z ,valvar)))
          (vec (setf ,x (vx ,valvar) ,y (vy ,valvar) ,z (vz ,valvar))))
        (let ()
          (declare (type ,*float-type* ,x ,y ,z))
