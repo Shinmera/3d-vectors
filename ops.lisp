@@ -10,9 +10,12 @@
   (let ((valvar (gensym "VAL")))
     `(let ((,valvar ,val) ,x ,y ,z)
        (etypecase ,valvar
-         (real (setf ,x ,valvar ,y ,valvar ,z ,valvar))
+         (real (setf ,valvar (ensure-float ,valvar))
+          (setf ,x ,valvar ,y ,valvar ,z ,valvar))
          (vec (setf ,x (vx ,valvar) ,y (vy ,valvar) ,z (vz ,valvar))))
-       ,@body)))
+       (let ()
+         (declare (type ,*float-type* ,x ,y ,z))
+         ,@body))))
 
 (defmacro define-veccomp (name op)
   `(progn
