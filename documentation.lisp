@@ -93,4 +93,9 @@ See VROT.")
   (nvrotv "Rotates the vector A around each axis by the amount in B. The rotations are performed in the order of X, Y, Z.
 Note that rotation in 3D space is not commutative, so this function might not perform the rotation as you expected if you need the rotation to happen in a different order.
 
-See NVROT."))
+See NVROT.")
+
+  (vorder "Allows you to handily create a new vector with reordered components.
+Each X/Y/Z argument can be one of 'X,'Y,'Z,'VX,'VY,'VZ,:X,:Y,:Z indicating the respective component, or NIL for 0.")
+  (vorder "Allows you to handily modify a vector by reordering its components.
+Each X/Y/Z argument can be one of 'X,'Y,'Z,'VX,'VY,'VZ,:X,:Y,:Z indicating the respective component, or NIL for 0."))
