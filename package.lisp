@@ -50,7 +50,9 @@
    #:vrot
    #:nvrot
    #:vrotv
-   #:nvrotv)
+   #:nvrotv
+   #:vorder
+   #:nvorder)
   ;; struct.lisp
   (:export
    #:vec
