@@ -26,7 +26,7 @@
        (with-vec (x y z) val
          (dolist (val vals T)
            (with-vec (bx by bz) val
-             (unless (and (,op x bx) (,op y by) (,op z by))
+             (unless (and (,op x bx) (,op y by) (,op z bz))
                (return-from ,name NIL))))))
      (define-compiler-macro ,name (&whole whole val &rest vals)
        (let ((ax (gensym "AX")) (ay (gensym "AY")) (az (gensym "AZ"))
