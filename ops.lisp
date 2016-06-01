@@ -103,29 +103,30 @@
                                  (vz ,v) ,z)
                           ,v)))))
 
-(defmacro vmodf (vec op &optional x y z)
+(defmacro vmodf (&environment env vec op &optional x y z)
   (let ((v (gensym "VEC")))
     `(let ((,v ,vec))
-       (psetf (vx ,v) (,op (vx ,v) ,@(when x (list x)))
-              (vy ,v) (,op (vy ,v) ,@(when y (list y)))
-              (vz ,v) (,op (vz ,v) ,@(when z (list z))))
+       (psetf (vx ,v) (,op (vx ,v) ,@(when x (list (ensure-float-param x env))))
+              (vy ,v) (,op (vy ,v) ,@(when y (list (ensure-float-param y env))))
+              (vz ,v) (,op (vz ,v) ,@(when z (list (ensure-float-param z env)))))
        ,v)))
 
-(defmacro %vecop-internal (op el x y z)
+(defmacro %vecop-internal (&environment env op el x y z)
   `(etypecase ,el
      (#.*float-type*
       (setf ,x (,op ,el ,x))
       (setf ,y (,op ,el ,y))
       (setf ,z (,op ,el ,z)))
      (real
-      (setf ,x (,op ,el ,x))
-      (setf ,y (,op ,el ,y))
-      (setf ,z (,op ,el ,z)))
+      (setf ,x (,op ,x ,(ensure-float-param el env)))
+      (setf ,y (,op ,y ,(ensure-float-param el env)))
+      (setf ,z (,op ,z ,(ensure-float-param el env))))
      (vec
       (setf ,x (,op (vx ,el) ,x))
       (setf ,y (,op (vy ,el) ,y))
       (setf ,z (,op (vz ,el) ,z)))))
 
+;; FIXME: Generate compiler macros to optimise to two-arg- versions.
 (defmacro define-vecop1 (name init op)
   (let ((init (ensure-float init)))
     `(progn
