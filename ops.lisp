@@ -280,7 +280,7 @@
       (setf (vx vec) (min ux (max lx (vx vec)))
             (vy vec) (min uy (max ly (vy vec)))
             (vz vec) (min uz (max lz (vz vec))))
-      a)))
+      vec)))
 
 (declaim (inline vlimit))
 (declaim (ftype (function ((or vec real) (or vec real)) vec) vlimit))
@@ -298,7 +298,7 @@
     (setf (vx vec) (min ux (max (- ux) (vx vec)))
           (vy vec) (min uy (max (- uy) (vy vec)))
           (vz vec) (min uz (max (- uz) (vz vec))))
-    a))
+    vec))
 
 (defmacro %vecrot-internal (&body body)
   ;; https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
