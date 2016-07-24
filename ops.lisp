@@ -335,7 +335,7 @@
 (declaim (ftype (function (vec vec) vec) vrotv))
 (defun vrotv (a b)
   (vrot (vrot (vrot a
-                    +vz+ (vx b))
+                    +vx+ (vx b))
               +vy+ (vy b))
         +vz+ (vz b)))
 
@@ -343,7 +343,7 @@
 (declaim (ftype (function (vec vec) vec) nvrotv))
 (defun nvrotv (a b)
   (nvrot (nvrot (nvrot a
-                       +vz+ (vx b))
+                       +vx+ (vx b))
                 +vy+ (vy b))
          +vz+ (vz b)))
 
