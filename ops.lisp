@@ -52,6 +52,26 @@
          (vec4 (setf ,x (vx ,valvar) ,y (vy ,valvar) ,z (vz ,valvar) ,w (vw ,valvar))))
        ,@body)))
 
+(defmacro %2vec-op (a b combination v2red &optional (v3red v2red) (v4red v2red))
+  (let ((v2red (if (listp v2red) v2red (list v2red)))
+        (v3red (if (listp v3red) v3red (list v3red)))
+        (v4red (if (listp v4red) v4red (list v4red))))
+    `(etypecase ,a
+       (real (let ((,a (ensure-float ,a)))
+               (etypecase ,b
+                 (vec4 (,@v4red (,combination ,a (vx b)) (,combination a (vy b)) (,combination a (vz b)) (,combination a (vw b))))
+                 (vec3 (,@v3red (,combination ,a (vx b)) (,combination a (vy b)) (,combination a (vz b))))
+                 (vec2 (,@v2red (,combination ,a (vx b)) (,combination a (vy b)))))))
+       (vec4 (etypecase b
+               (real (let ((b (ensure-float b))) (,@v4red (,combination (vx a) b) (,combination (vy a) b) (,combination (vz a) b) (,combination (vw a) b))))
+               (vec4 (,@v4red (,combination (vx a) (vx b)) (,combination (vy a) (vy b)) (,combination (vz a) (vz b)) (,combination (vw a) (vw b))))))
+       (vec3 (etypecase b
+               (real (let ((b (ensure-float b))) (,@v3red (,combination (vx a) b) (,combination (vy a) b) (,combination (vz a) b))))
+               (vec3 (,@v3red (,combination (vx a) (vx b)) (,combination (vy a) (vy b)) (,combination (vz a) (vz b))))))
+       (vec2 (etypecase b
+               (real (let ((b (ensure-float b))) (,@v2red (,combination (vx a) b) (,combination (vy a) b))))
+               (vec2 (,@v2red (,combination (vx a) (vx b)) (,combination (vy a) (vy b)))))))))
+
 (defmacro define-veccomp (name op)
   (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
     `(progn
@@ -59,22 +79,7 @@
        (declaim (ftype (function ((or vec real) &rest (or vec real)) boolean) ,name))
        (declaim (inline ,name ,2vec-name))
        (defun ,2vec-name (a b)
-         (etypecase a
-           (real (let ((a (ensure-float a)))
-                   (typecase b
-                     (real (,op a b))
-                     (vec4 (and (,op a (vx b)) (,op a (vy b)) (,op a (vz b)) (,op a (vw b))))
-                     (vec3 (and (,op a (vx b)) (,op a (vy b)) (,op a (vz b))))
-                     (vec2 (and (,op a (vx b)) (,op a (vy b)))))))
-           (vec4 (etypecase b
-                   (real (let ((b (ensure-float b))) (and (,op (vx a) b) (,op (vy a) b) (,op (vz a) b) (,op (vw a) b))))
-                   (vec4 (and (,op (vx a) (vx b)) (,op (vy a) (vy b)) (,op (vz a) (vz b)) (,op (vw a) (vw b))))))
-           (vec3 (etypecase b
-                   (real (let ((b (ensure-float b))) (and (,op (vx a) b) (,op (vy a) b) (,op (vz a) b))))
-                   (vec3 (and (,op (vx a) (vx b)) (,op (vy a) (vy b)) (,op (vz a) (vz b))))))
-           (vec2 (etypecase b
-                   (real (let ((b (ensure-float b))) (and (,op (vx a) b) (,op (vy a) b))))
-                   (vec2 (and (,op (vx a) (vx b)) (,op (vy a) (vy b))))))))
+         (%2vec-op a b ,op and and and))
        (defun ,name (val &rest vals)
          (loop for prev = val then next
                for next in vals
@@ -101,20 +106,7 @@
        (declaim (ftype (function ((or vec real) &rest (or vec real)) vec) ,name))
        (declaim (inline ,name ,2vec-name))
        (defun ,2vec-name (a b)
-         (etypecase a
-           (real (etypecase b
-                   (vec4 (vec4 (,op a (vx b)) (,op a (vy b)) (,op a (vz b)) (,op a (vw b))))
-                   (vec3 (vec3 (,op a (vx b)) (,op a (vy b)) (,op a (vz b))))
-                   (vec2 (vec2 (,op a (vx b)) (,op a (vy b))))))
-           (vec4 (with-vec4 (x y z w) a
-                   (with-vec4 (bx by bz bw) b
-                     (vec4 (,op x bx) (,op y by) (,op z bz) (,op w bw)))))
-           (vec3 (with-vec3 (x y z) a
-                   (with-vec3 (bx by bz) b
-                     (vec3 (,op x bx) (,op y by) (,op z bz)))))
-           (vec2 (with-vec2 (x y) a
-                   (with-vec2 (bx by) b
-                     (vec2 (,op x bx) (,op y by)))))))
+         (%2vec-op a b ,op vec2 vec3 vec4))
        (defun ,name (val &rest vals)
          (loop for res = val then (,2vec-name res next)
                for next in vals
@@ -152,167 +144,161 @@
 (define-vector-constant +vy+ 0 1 0)
 (define-vector-constant +vz+ 0 0 1)
 
-
 (declaim (inline vlength))
 (declaim (ftype (function (vec) #.*float-type*) vlength))
 (defun vlength (v)
-  (sqrt (+ (expt (vx v) 2)
-           (expt (vy v) 2)
-           (expt (vz v) 2))))
+  (etypecase v
+    (vec2 (sqrt (+ (expt (vx v) 2)
+                   (expt (vy v) 2))))
+    (vec3 (sqrt (+ (expt (vx v) 2)
+                   (expt (vy v) 2)
+                   (expt (vz v) 2))))
+    (vec4 (sqrt (+ (expt (vx v) 2)
+                   (expt (vy v) 2)
+                   (expt (vz v) 2)
+                   (expt (vw v) 2))))))
 
-(defmacro vsetf (&environment env &rest quads)
-  (unless (= 0 (mod (length quads) 4))
-    (error "Must supply a balanced set of vectors to three values."))
-  (let ((v (gensym "VEC")))
-    `(progn
-       ,@(loop for (vec x y z) on quads by #'cddddr
-               do (setf x (ensure-float-param x env)
-                        y (ensure-float-param y env)
-                        z (ensure-float-param z env))
-               collect `(let ((,v ,vec))
-                          (psetf (vx ,v) ,x
-                                 (vy ,v) ,y
-                                 (vz ,v) ,z)
-                          ,v)))))
+(defmacro %vsetf (&environment env v x y &optional z w)
+  `(progn ,(cond (w `(psetf (vx ,v) ,(ensure-float-param x env)
+                            (vy ,v) ,(ensure-float-param y env)
+                            (vz ,v) ,(ensure-float-param z env)
+                            (vw ,v) ,(ensure-float-param w env)))
+                 (z `(psetf (vx ,v) ,(ensure-float-param x env)
+                            (vy ,v) ,(ensure-float-param y env)
+                            (vz ,v) ,(ensure-float-param z env)))
+                 (T `(psetf (vx ,v) ,(ensure-float-param x env)
+                            (vy ,v) ,(ensure-float-param y env))))
+          ,v))
 
-(defmacro vmodf (&environment env vec op &optional x y z)
+(defmacro vsetf (vec x y &optional z w)
   (let ((v (gensym "VEC")))
     `(let ((,v ,vec))
-       (psetf (vx ,v) (,op (vx ,v) ,@(when x (list (ensure-float-param x env))))
-              (vy ,v) (,op (vy ,v) ,@(when y (list (ensure-float-param y env))))
-              (vz ,v) (,op (vz ,v) ,@(when z (list (ensure-float-param z env)))))
+       (etypecase ,v
+         (vec2 (%vsetf ,v ,x ,y))
+         (vec3 (%vsetf ,v ,x ,y ,z))
+         (vec4 (%vsetf ,v ,x ,y ,z ,w)))
        ,v)))
 
-(defmacro %vecop-internal (&environment env op el x y z)
-  `(etypecase ,el
-     (#.*float-type*
-      (setf ,x (,op ,el ,x))
-      (setf ,y (,op ,el ,y))
-      (setf ,z (,op ,el ,z)))
-     (real
-      (setf ,x (,op ,x ,(ensure-float-param el env)))
-      (setf ,y (,op ,y ,(ensure-float-param el env)))
-      (setf ,z (,op ,z ,(ensure-float-param el env))))
-     (vec
-      (setf ,x (,op (vx ,el) ,x))
-      (setf ,y (,op (vy ,el) ,y))
-      (setf ,z (,op (vz ,el) ,z)))))
+(defmacro vmod (&environment env vec op &optional x y z w)
+  (let ((v (gensym "VEC")))
+    `(let ((,v ,vec))
+       (etypecase ,v
+         (vec2 (vec2 (,op (vx ,v) ,@(when x (list (ensure-float-param x env))))
+                     (,op (vy ,v) ,@(when y (list (ensure-float-param y env))))))
+         (vec3 (vec3 (,op (vx ,v) ,@(when x (list (ensure-float-param x env))))
+                     (,op (vy ,v) ,@(when y (list (ensure-float-param y env))))
+                     (,op (vz ,v) ,@(when z (list (ensure-float-param z env))))))
+         (vec4 (vec4 (,op (vx ,v) ,@(when x (list (ensure-float-param x env))))
+                     (,op (vy ,v) ,@(when y (list (ensure-float-param y env))))
+                     (,op (vz ,v) ,@(when z (list (ensure-float-param z env))))
+                     (,op (vw ,v) ,@(when w (list (ensure-float-param w env))))))))))
 
-;; FIXME: Generate compiler macros to optimise to two-arg- versions.
-(defmacro define-vecop1 (name init op)
-  (let ((init (ensure-float init)))
-    `(progn
-       (declaim (inline ,name))
-       (declaim (ftype (function (&rest (or vec real)) vec) ,name))
-       (defun ,name (&rest vals)
-         (let ((x ,init) (y ,init) (z ,init))
-           (declare (type #.*float-type* x y z))
-           (dolist (v vals (vec x y z))
-             (%vecop-internal ,op v x y z)))))))
+(defmacro vmodf (&environment env vec op &optional x y z w)
+  (let ((v (gensym "VEC")))
+    `(let ((,v ,vec))
+       (vsetf ,v (,op (vx ,v) ,@(when x (list (ensure-float-param x env))))
+              (,op (vy ,v) ,@(when y (list (ensure-float-param y env))))
+              (,op (vz ,v) ,@(when z (list (ensure-float-param z env))))
+              (,op (vw ,v) ,@(when w (list (ensure-float-param w env)))))
+       ,v)))
 
-(defmacro define-vecop2 (name init op comp)
-  (let ((init (ensure-float init)))
+(defmacro define-vecop (name nname op)
+  (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
     `(progn
-       (declaim (inline ,name))
+       (declaim (inline ,name ,2vec-name))
        (declaim (ftype (function ((or vec real) &rest (or vec real)) vec) ,name))
+       (declaim (ftype (function ((or vec real) (or vec real)) vec) ,2vec-name))
+       (defun ,2vec-name (a b)
+         (%2vec-op a b ,op vec2 vec3 vec4))
        (defun ,name (val &rest vals)
-         (let ((x ,init) (y ,init) (z ,init))
-           (declare (type #.*float-type* x y z))
-           (cond (vals
-                  (dolist (v vals)
-                    (%vecop-internal ,comp v x y z))
-                  (%vecop-internal ,op val x y z))
-                 (T
-                  (%vecop-internal ,comp val x y z)
-                  (setf x (,op x) y (,op y) z (,op z))))
-           (vec x y z))))))
+         (cond ((cdr vals)
+                (apply #',nname (,2vec-name val (first vals)) (rest vals)))
+               (vals (,2vec-name val (first vals)))
+               (T (vmod val ,op))))
+       (define-compiler-macro ,name (val &rest vals)
+         (case (length vals)
+           (0 `(vmod ,val ,',op))
+           (1 `(,',2vec-name ,val ,(first vals)))
+           (T `(,',nname (,',2vec-name ,val ,(first val)) ,@(rest val))))))))
 
-(defmacro define-nvecop (name init op &optional comp)
-  (let ((init (ensure-float init)))
+(defmacro define-nvecop (name op)
+  (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
     `(progn
-       (declaim (inline ,name))
+       (declaim (inline ,name ,2vec-name))
        (declaim (ftype (function (vec &rest (or vec real)) vec) ,name))
+       (declaim (ftype (function (vec (or vec real)) vec) ,2vec-name))
+       (defun ,2vec-name (a b)
+         (%2vec-op a b ,op (%vsetf a)))
        (defun ,name (val &rest vals)
-         (cond (vals
-                ,(if comp
-                     `(let ((x ,init) (y ,init) (z ,init))
-                        (declare (type #.*float-type* x y z))
-                        (dolist (v vals)
-                          (%vecop-internal ,comp v x y z))
-                        (vmodf val ,op x y z))
-                     `(dolist (v vals)
-                        (etypecase v
-                          (real (vmodf val ,op v v v))
-                          (vec (vmodf val ,op (vx v) (vy v) (vz v)))))))
-               ,@(when comp
-                   `((T
-                      (vmodf val ,op)))))
-         val))))
+         (if vals
+             (loop for v in vals
+                   do (,2vec-name val v)
+                   finally (return val))
+             (vmodf val ,op)))
+       (define-compiler-macro ,name (val &rest vals)
+         (case (length vals)
+           (0 `(vmodf ,val ,',op))
+           (1 `(,',2vec-name ,val ,(first vals)))
+           (T `(,',name (,',2vec-name ,val ,(first vals)) ,@(rest vals))))))))
 
-(define-vecop1 v+ 0 +)
-(define-vecop2 v- 0 - +)
-(define-vecop1 v* 1 *)
-(define-vecop2 v/ 1 / *)
-(define-nvecop nv+ 0 +)
-(define-nvecop nv- 0 - +)
-(define-nvecop nv* 1 *)
-(define-nvecop nv/ 1 / *)
+(define-vecop v+ nv+ +)
+(define-vecop v- nv- -)
+(define-vecop v* nv* *)
+(define-vecop v/ nv/ /)
+(define-nvecop nv+ +)
+(define-nvecop nv- -)
+(define-nvecop nv* *)
+(define-nvecop nv/ /)
 
 (declaim (inline v1+))
 (declaim (ftype (function (vec) vec) v1+))
 (defun v1+ (v)
-  (vec (1+ (vx v))
-       (1+ (vy v))
-       (1+ (vz v))))
+  (v+ v 1))
 
 (declaim (inline v1-))
 (declaim (ftype (function (vec) vec) v1-))
 (defun v1- (v)
-  (vec (1- (vx v))
-       (1- (vy v))
-       (1- (vz v))))
+  (v- v 1))
 
 (defmacro vincf (&environment env v &optional (delta 1))
-  (let ((d (gensym "DELTA")))
-    `(let ((,d ,(ensure-float-param delta env)))
-       (vmodf ,v + ,d ,d ,d))))
+  `(nv+ ,v ,(ensure-float-param delta env)))
 
 (defmacro vdecf (&environment env v &optional (delta 1))
-  (let ((d (gensym "DELTA")))
-    `(let ((,d ,(ensure-float-param delta env)))
-       (vmodf ,v - ,d ,d ,d))))
+  `(nv- ,v ,(ensure-float-param delta env)))
 
 (declaim (inline v.))
 (declaim (ftype (function (vec vec) #.*float-type*) v.))
 (defun v. (a b)
-  (+ (* (vx a) (vx b))
-     (* (vy a) (vy b))
-     (* (vz a) (vz b))))
+  (etypecase a
+    (vec2 (+ (* (vx a) (vx b))
+             (* (vy a) (vy b))))
+    (vec3 (+ (* (vx a) (vx b))
+             (* (vy a) (vy b))
+             (* (vz a) (vz b))))
+    (vec4 (+ (* (vx a) (vx b))
+             (* (vy a) (vy b))
+             (* (vz a) (vz b))
+             (* (vw a) (vw b))))))
 
 (declaim (inline vc))
-(declaim (ftype (function (vec vec) vec) vc))
+(declaim (ftype (function (vec3 vec3) vec3) vc))
 (defun vc (a b)
-  (vec (- (* (vy a) (vz b))
-          (* (vz a) (vy b)))
-       (- (* (vz a) (vx b))
-          (* (vx a) (vz b)))
-       (- (* (vx a) (vy b))
-          (* (vy a) (vx b)))))
+  (vec3 (- (* (vy a) (vz b))
+           (* (vz a) (vy b)))
+        (- (* (vz a) (vx b))
+           (* (vx a) (vz b)))
+        (- (* (vx a) (vy b))
+           (* (vy a) (vx b)))))
 
 (declaim (inline vabs))
 (declaim (ftype (function (vec) vec) vabs))
-(defun vabs (a)
-  (vec (abs (vx a))
-       (abs (vy a))
-       (abs (vz a))))
+(defun vabs (vec)
+  (vmod vec abs))
 
 (declaim (inline nvabs))
 (declaim (ftype (function (vec) vec) nvabs))
 (defun nvabs (vec)
-  (setf (vx vec) (abs (vx vec))
-        (vy vec) (abs (vy vec))
-        (vz vec) (abs (vz vec)))
-  vec)
+  (vmodf vec abs))
 
 (declaim (inline vunit))
 (declaim (ftype (function (vec) vec) vunit))
@@ -387,13 +373,13 @@
        ,@body)))
 
 (declaim (inline vrot))
-(declaim (ftype (function (vec vec real) vec) vrot))
+(declaim (ftype (function (vec3 vec3 real) vec3) vrot))
 (defun vrot (v axis phi)
   (%vecrot-internal
     (vec (arith vx) (arith vy) (arith vz))))
 
 (declaim (inline nvrot))
-(declaim (ftype (function (vec vec real) vec) nvrot))
+(declaim (ftype (function (vec3 vec3 real) vec3) nvrot))
 (defun nvrot (v axis phi)
   ;; https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
   ;; vr = v*cos(phi) + (kxv)*sin(phi) + k*(k*v)*(1-cos(phi)
@@ -404,7 +390,7 @@
     v))
 
 (declaim (inline vrotv))
-(declaim (ftype (function (vec vec) vec) vrotv))
+(declaim (ftype (function (vec3 vec3) vec3) vrotv))
 (defun vrotv (a b)
   (vrot (vrot (vrot a
                     +vx+ (vx b))
@@ -412,24 +398,28 @@
         +vz+ (vz b)))
 
 (declaim (inline nvrotv))
-(declaim (ftype (function (vec vec) vec) nvrotv))
+(declaim (ftype (function (vec3 vec3) vec3) nvrotv))
 (defun nvrotv (a b)
   (nvrot (nvrot (nvrot a
                        +vx+ (vx b))
                 +vy+ (vy b))
          +vz+ (vz b)))
 
-(declaim (ftype (function (vec symbol &optional symbol symbol) vec) vorder))
-(defun vorder (v x &optional y z)
+(declaim (ftype (function (vec symbol &optional symbol symbol symbol) vec) vorder))
+(defun vorder (v x &optional y z w)
   (flet ((component (n)
            (ecase n
              ((vx x :x) (vx v))
              ((vy y :y) (vy v))
              ((vz z :z) (vz v))
+             ((vw w :w) (vw v))
              ((NIL) 0.0))))
-    (vec (component x) (component y) (component z))))
+    (etypecase v
+      (vec2 (vec2 (component x) (component y)))
+      (vec3 (vec3 (component x) (component y) (component z)))
+      (vec4 (vec4 (component x) (component y) (component z) (component w))))))
 
-(define-compiler-macro vorder (&environment env vec x &optional y z)
+(define-compiler-macro vorder (&environment env vec x &optional y z w)
   (let ((v (gensym "VEC")))
     (flet ((component (n)
              (if (constantp n env)
@@ -437,29 +427,32 @@
                    ((vx x :x) `(vx ,v))
                    ((vy y :y) `(vy ,v))
                    ((vz z :z) `(vz ,v))
+                   ((vw w :w) `(vw ,v))
                    ((NIL) 0.0))
                  `(ecase ,n
                     ((vx x :x) (vx v))
                     ((vy y :y) (vy v))
                     ((vz z :z) (vz v))
+                    ((vw w :w) (vw v))
                     ((NIL) 0.0)))))
       `(let ((,v ,vec))
-         (vec ,(component x) ,(component y) ,(component z))))))
+         (etypecase ,v
+           (vec2 (vec ,(component x) ,(component y)))
+           (vec3 (vec ,(component x) ,(component y) ,(component z)))
+           (vec4 (vec ,(component x) ,(component y) ,(component z) ,(component w))))))))
 
-(declaim (ftype (function (vec symbol &optional symbol symbol) vec) vorder))
-(defun nvorder (v x &optional y z)
+(declaim (ftype (function (vec symbol &optional symbol symbol symbol) vec) vorder))
+(defun nvorder (v x &optional y z w)
   (flet ((component (n)
            (ecase n
              ((vx x :x) (vx v))
              ((vy y :y) (vy v))
              ((vz z :z) (vz v))
+             ((vw w :w) (vw v))
              ((NIL) 0.0))))
-    (psetf (vx v) (component x)
-           (vy v) (component y)
-           (vz v) (component z))
-    v))
+    (vsetf v (component x) (component y) (component z) (component w))))
 
-(define-compiler-macro nvorder (&environment env vec x &optional y z)
+(define-compiler-macro nvorder (&environment env vec x &optional y z w)
   (let ((v (gensym "VEC")))
     (flet ((component (n)
              (if (constantp n env)
@@ -467,14 +460,13 @@
                    ((vx x :x) `(vx ,v))
                    ((vy y :y) `(vy ,v))
                    ((vz z :z) `(vz ,v))
+                   ((vw w :w) `(vw ,v))
                    ((NIL) 0.0))
                  `(ecase ,n
                     ((vx x :x) (vx v))
                     ((vy y :y) (vy v))
                     ((vz z :z) (vz v))
+                    ((vw w :w) (vw v))
                     ((NIL) 0.0)))))
       `(let ((,v ,vec))
-         (psetf (vx ,v) ,(component x)
-                (vy ,v) ,(component y)
-                (vz ,v) ,(component z))
-         ,v))))
+         (vsetf ,v ,(component x) ,(component y) ,(component z) ,(component w))))))
