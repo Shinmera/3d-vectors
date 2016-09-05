@@ -25,7 +25,7 @@
       `(ensure-float ,val)))
 
 (defstruct (vec2 (:conc-name NIL)
-                 (:constructor %vec2 (%vx %vy))
+                 (:constructor %vec2 (%vx2 %vy2))
                  (:copier vcopy2)
                  (:predicate vec2-p))
   (%vx2 (ensure-float 0) :type #.*float-type*)
@@ -48,7 +48,7 @@
           ,(ensure-float-param y env)))
 
 (defstruct (vec3 (:conc-name NIL)
-                 (:constructor %vec3 (%vx %vy %vz))
+                 (:constructor %vec3 (%vx3 %vy3 %vz3))
                  (:copier vcopy3)
                  (:predicate vec3-p))
   (%vx3 (ensure-float 0) :type #.*float-type*)
@@ -70,7 +70,7 @@
   `(vec3 ,(vx v) ,(vy v) ,(vz v)))
 
 (defstruct (vec4 (:conc-name NIL)
-                 (:constructor %vec4 (%vx %vy %vz %vw))
+                 (:constructor %vec4 (%vx4 %vy4 %vz4 %vw4))
                  (:copier vcopy4)
                  (:predicate vec4-p))
   (%vx4 (ensure-float 0) :type #.*float-type*)
