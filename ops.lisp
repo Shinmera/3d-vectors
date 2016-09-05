@@ -114,17 +114,30 @@
 (define-vecreduce vmin min)
 (define-vecreduce vmax max)
 
-(defmacro define-vector-constant (name x y &optional (z 0))
+(defmacro define-vector-constant (name x y &optional z w)
   `(defconstant ,name (cond ((not (boundp ',name))
-                             (vec ,x ,y ,z))
-                            ((v= (symbol-value ',name) (vec ,x ,y ,z))
+                             (vec ,x ,y ,z ,w))
+                            ((v= (symbol-value ',name) (vec ,x ,y ,z ,w))
                              (symbol-value ',name))
                             (T (error "Attempting to redefine constant vector ~a with value ~a to ~a."
-                                      ',name (symbol-value ',name) (vec ,x ,y ,z))))))
+                                      ',name (symbol-value ',name) (vec ,x ,y ,z ,w))))))
+(define-vector-constant +vx2+ 1 0)
+(define-vector-constant +vy2+ 0 1)
 
+(define-vector-constant +vx3+ 1 0 0)
+(define-vector-constant +vy3+ 0 1 0)
+(define-vector-constant +vz3+ 0 0 1)
+
+(define-vector-constant +vx4+ 1 0 0 0)
+(define-vector-constant +vy4+ 0 1 0 0)
+(define-vector-constant +vz4+ 0 0 1 0)
+(define-vector-constant +vw4+ 0 0 0 1)
+
+;; backwards-compat
 (define-vector-constant +vx+ 1 0 0)
 (define-vector-constant +vy+ 0 1 0)
 (define-vector-constant +vz+ 0 0 1)
+
 
 (declaim (inline vlength))
 (declaim (ftype (function (vec) #.*float-type*) vlength))
