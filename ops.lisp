@@ -25,7 +25,6 @@
          (real (let ((,valvar (ensure-float ,valvar)))
                  (declare (type ,*float-type* ,valvar))
                  (setf ,x ,valvar ,y ,valvar ,z ,valvar)))
-         (vec2 (setf ,x (vx ,valvar) ,y (vy ,valvar)))
          (vec3 (setf ,x (vx ,valvar) ,y (vy ,valvar) ,z (vz ,valvar))))
        ,@body)))
 
@@ -37,13 +36,21 @@
          (real (let ((,valvar (ensure-float ,valvar)))
                  (declare (type ,*float-type* ,valvar))
                  (setf ,x ,valvar ,y ,valvar ,z ,valvar ,w ,valvar)))
-         (vec2 (setf ,x (vx ,valvar) ,y (vy ,valvar)))
-         (vec3 (setf ,x (vx ,valvar) ,y (vy ,valvar) ,z (vz ,valvar)))
          (vec4 (setf ,x (vx ,valvar) ,y (vy ,valvar) ,z (vz ,valvar) ,w (vw ,valvar))))
        ,@body)))
 
 (defmacro with-vec ((x y &optional (z (gensym "Z")) (w (gensym "W"))) val &body body)
-  `(with-vec4 (,x ,y ,z ,w) ,val ,@body))
+  (let ((valvar (gensym "VAL")))
+    `(let ((,valvar ,val) (,x #.(ensure-float 0)) (,y #.(ensure-float 0)) (,z #.(ensure-float 0)) (,w #.(ensure-float 0)))
+       (declare (type ,*float-type* ,x ,y ,z ,w))
+       (etypecase ,valvar
+         (real (let ((,valvar (ensure-float ,valvar)))
+                 (declare (type ,*float-type* ,valvar))
+                 (setf ,x ,valvar ,y ,valvar ,z ,valvar ,w ,valvar)))
+         (vec2 (setf ,x (vx ,valvar) ,y (vy ,valvar)))
+         (vec3 (setf ,x (vx ,valvar) ,y (vy ,valvar) ,z (vz ,valvar)))
+         (vec4 (setf ,x (vx ,valvar) ,y (vy ,valvar) ,z (vz ,valvar) ,w (vw ,valvar))))
+       ,@body)))
 
 (defmacro define-veccomp (name op)
   (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
@@ -60,28 +67,25 @@
                      (vec2 (and (,op (vx b) a) (,op (vy b) a))))))
            (vec4 (etypecase b
                    (real (let ((b (ensure-float b))) (and (,op (vx a) b) (,op (vy a) b) (,op (vz a) b) (,op (vw a) b))))
-                   (vec4 (and (,op (vx a) (vx b)) (,op (vy a) (vy b)) (,op (vz a) (vz b)) (,op (vw a) (vw b))))
-                   (vec3 (and (,op (vx a) (vx b)) (,op (vy a) (vy b)) (,op (vz a) (vz b))))
-                   (vec2 (and (,op (vx a) (vx b)) (,op (vy a) (vy b))))))
+                   (vec4 (and (,op (vx a) (vx b)) (,op (vy a) (vy b)) (,op (vz a) (vz b)) (,op (vw a) (vw b))))))
            (vec3 (etypecase b
                    (real (let ((b (ensure-float b))) (and (,op (vx a) b) (,op (vy a) b) (,op (vz a) b))))
-                   (vec3 (and (,op (vx a) (vx b)) (,op (vy a) (vy b)) (,op (vz a) (vz b))))
-                   (vec2 (and (,op (vx a) (vx b)) (,op (vy a) (vy b))))))
+                   (vec3 (and (,op (vx a) (vx b)) (,op (vy a) (vy b)) (,op (vz a) (vz b))))))
            (vec2 (etypecase b
                    (real (let ((b (ensure-float b))) (and (,op (vx a) b) (,op (vy a) b))))
                    (vec2 (and (,op (vx a) (vx b)) (,op (vy a) (vy b))))))))
        (declaim (ftype (function ((or vec real) &rest (or vec real)) boolean) ,name))
        (defun ,name (val &rest vals)
-         (with-vec (x y z w) val
-           (dolist (val vals T)
-             (with-vec (bx by bz bw) val
-               (unless (and (,op x bx) (,op y by) (,op z bz) (,op w bw))
-                 (return-from ,name NIL))))))
-       (define-compiler-macro ,name (&whole whole val &rest vals)
+         (loop for prev = val then next
+               for next in vals
+               always (,2vec-name prev next)))
+       (define-compiler-macro ,name (val &rest vals)
          (case (length vals)
            (0 T)
-           (1 (list ',2vec-name val (first vals)))
-           (T whole))))))
+           (1 `(,',2vec-name ,val ,(first vals)))
+           (T `(and ,@(loop for prev = val then next
+                            for next in vals
+                            collect `(,',2vec-name ,prev ,next)))))))))
 
 (define-veccomp v= =)
 (define-veccomp v/= /=)
