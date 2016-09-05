@@ -65,6 +65,9 @@
           ,(ensure-float-param y env)
           ,(ensure-float-param z env)))
 
+(defmethod print-object ((v vec3) stream)
+  (write (make-load-form v) :stream stream))
+
 (defmethod make-load-form ((v vec3) &optional env)
   (declare (ignore env))
   `(vec3 ,(vx v) ,(vy v) ,(vz v)))
@@ -88,6 +91,9 @@
           ,(ensure-float-param y env)
           ,(ensure-float-param z env)
           ,(ensure-float-param w env)))
+
+(defmethod print-object ((v vec4) stream)
+  (write (make-load-form v) :stream stream))
 
 (defmethod make-load-form ((v vec4) &optional env)
   (declare (ignore env))
