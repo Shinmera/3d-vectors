@@ -55,16 +55,17 @@
 (defmacro define-veccomp (name op)
   (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
     `(progn
-       (declaim (inline ,name ,2vec-name))
        (declaim (ftype (function ((or vec real) (or vec real)) boolean) ,2vec-name))
+       (declaim (ftype (function ((or vec real) &rest (or vec real)) boolean) ,name))
+       (declaim (inline ,name ,2vec-name))
        (defun ,2vec-name (a b)
          (etypecase a
            (real (let ((a (ensure-float a)))
-                   (etypecase b
+                   (typecase b
                      (real (,op a b))
-                     (vec4 (and (,op (vx b) a) (,op (vy b) a) (,op (vz b) a) (,op (vw b) a)))
-                     (vec3 (and (,op (vx b) a) (,op (vy b) a) (,op (vz b) a)))
-                     (vec2 (and (,op (vx b) a) (,op (vy b) a))))))
+                     (vec4 (and (,op a (vx b)) (,op a (vy b)) (,op a (vz b)) (,op a (vw b))))
+                     (vec3 (and (,op a (vx b)) (,op a (vy b)) (,op a (vz b))))
+                     (vec2 (and (,op a (vx b)) (,op a (vy b)))))))
            (vec4 (etypecase b
                    (real (let ((b (ensure-float b))) (and (,op (vx a) b) (,op (vy a) b) (,op (vz a) b) (,op (vw a) b))))
                    (vec4 (and (,op (vx a) (vx b)) (,op (vy a) (vy b)) (,op (vz a) (vz b)) (,op (vw a) (vw b))))))
@@ -74,7 +75,6 @@
            (vec2 (etypecase b
                    (real (let ((b (ensure-float b))) (and (,op (vx a) b) (,op (vy a) b))))
                    (vec2 (and (,op (vx a) (vx b)) (,op (vy a) (vy b))))))))
-       (declaim (ftype (function ((or vec real) &rest (or vec real)) boolean) ,name))
        (defun ,name (val &rest vals)
          (loop for prev = val then next
                for next in vals
@@ -95,25 +95,35 @@
 (define-veccomp v>= >=)
 
 (defmacro define-vecreduce (name op)
-  `(progn
-     (declaim (inline ,name))
-     (declaim (ftype (function ((or vec real) &rest (or vec real)) vec) ,name))
-     (defun ,name (val &rest vals)
-       (with-vec (x y z) val
-         (dolist (val vals (vec x y z))
-           (with-vec (bx by bz) val
-             (setf x (,op x bx)
-                   y (,op y by)
-                   z (,op z bz))))))
-     (define-compiler-macro ,name (&whole whole val &rest vals)
-       (let ((ax (gensym "AX")) (ay (gensym "AY")) (az (gensym "AZ"))
-             (bx (gensym "BX")) (by (gensym "BY")) (bz (gensym "BZ")))
+  (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
+    `(progn
+       (declaim (ftype (function ((or vec real) (or vec real)) vec) ,2vec-name))
+       (declaim (ftype (function ((or vec real) &rest (or vec real)) vec) ,name))
+       (declaim (inline ,name ,2vec-name))
+       (defun ,2vec-name (a b)
+         (etypecase a
+           (real (etypecase b
+                   (vec4 (vec4 (,op a (vx b)) (,op a (vy b)) (,op a (vz b)) (,op a (vw b))))
+                   (vec3 (vec3 (,op a (vx b)) (,op a (vy b)) (,op a (vz b))))
+                   (vec2 (vec2 (,op a (vx b)) (,op a (vy b))))))
+           (vec4 (with-vec4 (x y z w) a
+                   (with-vec4 (bx by bz bw) b
+                     (vec4 (,op x bx) (,op y by) (,op z bz) (,op w bw)))))
+           (vec3 (with-vec3 (x y z) a
+                   (with-vec3 (bx by bz) b
+                     (vec3 (,op x bx) (,op y by) (,op z bz)))))
+           (vec2 (with-vec2 (x y) a
+                   (with-vec2 (bx by) b
+                     (vec2 (,op x bx) (,op y by)))))))
+       (defun ,name (val &rest vals)
+         (loop for res = val then (,2vec-name res next)
+               for next in vals
+               finally (return res)))
+       (define-compiler-macro ,name (val &rest vals)
          (case (length vals)
-           (0 `(with-vec (,ax ,ay ,az) ,val (vec ,ax ,ay ,az)))
-           (1 `(with-vec (,ax ,ay ,az) ,val
-                 (with-vec (,bx ,by ,bz) ,(first vals)
-                   (vec (,',op ,ax ,bx) (,',op ,ay ,by) (,',op ,az ,bz)))))
-           (2 whole))))))
+           (0 (vcopy val))
+           (1 `(,',2vec-name val ,(first vals)))
+           (T `(,',2vec-name val (,',name ,@(rest vals)))))))))
 
 (define-vecreduce vmin min)
 (define-vecreduce vmax max)
