@@ -34,7 +34,7 @@
 (declaim (inline vec2))
 (declaim (ftype (function (real real) vec2) vec2))
 (defun vec2 (x y)
-  (%vec (ensure-float x) (ensure-float y)))
+  (%vec2 (ensure-float x) (ensure-float y)))
 
 (defmethod print-object ((v vec2) stream)
   (write (make-load-form v) :stream stream))
