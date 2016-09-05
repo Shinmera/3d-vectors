@@ -117,6 +117,17 @@
 (define-vec-accessor vw NIL   NIL %vw4)
 
 (declaim (inline vec))
+(defun vec-p (vec)
+  (etypecase vec (vec2 T) (vec3 T) (vec4 T)))
+
+(declaim (inline vcopy))
+(defun vcopy (vec)
+  (etypecase vec
+    (vec2 (vec2 (vx vec) (vy vec)))
+    (vec3 (vec3 (vx vec) (vy vec) (vz vec)))
+    (vec4 (vec4 (vx vec) (vy vec) (vz vec) (vw vec)))))
+
+(declaim (inline vec))
 (declaim (ftype (function (real real &optional real real) vec) vec))
 (defun vec (x y &optional z w)
   (cond (w (%vec4 (ensure-float x) (ensure-float y) (ensure-float z) (ensure-float w)))
