@@ -28,8 +28,8 @@
                  (:constructor %vec2 (%vx %vy))
                  (:copier vcopy2)
                  (:predicate vec2-p))
-  (%vx (ensure-float 0) :type #.*float-type*)
-  (%vy (ensure-float 0) :type #.*float-type*))
+  (%vx2 (ensure-float 0) :type #.*float-type*)
+  (%vy2 (ensure-float 0) :type #.*float-type*))
 
 (declaim (inline vec2))
 (declaim (ftype (function (real real) vec2) vec2))
@@ -50,9 +50,10 @@
 (defstruct (vec3 (:conc-name NIL)
                  (:constructor %vec3 (%vx %vy %vz))
                  (:copier vcopy3)
-                 (:predicate vec3-p)
-                 (:include vec2))
-  (%vz (ensure-float 0) :type #.*float-type*))
+                 (:predicate vec3-p))
+  (%vx3 (ensure-float 0) :type #.*float-type*)
+  (%vy3 (ensure-float 0) :type #.*float-type*)
+  (%vz3 (ensure-float 0) :type #.*float-type*))
 
 (declaim (inline vec3))
 (declaim (ftype (function (real real real) vec3) vec3))
@@ -70,10 +71,12 @@
 
 (defstruct (vec4 (:conc-name NIL)
                  (:constructor %vec4 (%vx %vy %vz %vw))
-                 (:copier vcopy)
-                 (:predicate vec-p)
-                 (:include vec3))
-  (%vw (ensure-float 0) :type #.*float-type*))
+                 (:copier vcopy4)
+                 (:predicate vec4-p))
+  (%vx4 (ensure-float 0) :type #.*float-type*)
+  (%vy4 (ensure-float 0) :type #.*float-type*)
+  (%vz4 (ensure-float 0) :type #.*float-type*)
+  (%vw4 (ensure-float 0) :type #.*float-type*))
 
 (declaim (inline vec4))
 (declaim (ftype (function (real real real) vec4) vec4))
@@ -90,20 +93,28 @@
   (declare (ignore env))
   `(vec4 ,(vx v) ,(vy v) ,(vz v) ,(vw v)))
 
-(defmacro define-vec-accessor (name accessor)
-  `(progn
-     (setf (fdefinition ',name)
-           (fdefinition ',accessor))
-     (defsetf ,name (vec) (value)
-       `(setf (,',accessor ,vec) (ensure-float ,value)))))
-
-(define-vec-accessor vx %vx)
-(define-vec-accessor vy %vy)
-(define-vec-accessor vz %vz)
-(define-vec-accessor vw %vw)
-
 ;; Backwards-compat
-(deftype vec () 'vec2)
+(deftype vec () '(or vec2 vec3 vec4))
+
+(defmacro define-vec-accessor (name a2 a3 a4)
+  `(progn
+     (declaim (inline ,name))
+     (declaim (ftype (function (vec) ,*float-type*)))
+     (defun ,name (vec)
+       (etypecase vec
+         ,@(when a3 `((vec3 (,a3 vec))))
+         ,@(when a4 `((vec4 (,a4 vec))))
+         ,@(when a2 `((vec2 (,a2 vec))))))
+     (defsetf ,name (&environment env vec) (value)
+       `(etypecase ,vec
+          ,@(when ',a3 `((vec3 (setf (,',a3 ,vec) ,(ensure-float-param value env)))))
+          ,@(when ',a4 `((vec4 (setf (,',a4 ,vec) ,(ensure-float-param value env)))))
+          ,@(when ',a2 `((vec2 (setf (,',a2 ,vec) ,(ensure-float-param value env)))))))))
+
+(define-vec-accessor vx %vx2 %vx3 %vx4)
+(define-vec-accessor vy %vy2 %vy3 %vy4)
+(define-vec-accessor vz NIL  %vz3 %vz4)
+(define-vec-accessor vw NIL   NIL %vw4)
 
 (declaim (inline vec))
 (declaim (ftype (function (real real &optional real real) vec) vec))
