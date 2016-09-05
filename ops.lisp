@@ -81,7 +81,7 @@
          (case (length vals)
            (0 T)
            (1 (list ',2vec-name val (first vals)))
-           (2 whole))))))
+           (T whole))))))
 
 (define-veccomp v= =)
 (define-veccomp v/= /=)
