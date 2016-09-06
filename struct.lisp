@@ -141,7 +141,7 @@
         (z (%vec3 (ensure-float x) (ensure-float y) (ensure-float z)))
         (T (%vec2 (ensure-float x) (ensure-float y)))))
 
-(define-compiler-macro vec (&whole whole &environment env x y &optional z w)
-  (cond (w `(%vec4 ,(ensure-float x) ,(ensure-float y) ,(ensure-float z) ,(ensure-float w)))
-        (z `(%vec3 ,(ensure-float x) ,(ensure-float y) ,(ensure-float z)))
-        (T `(%vec2 ,(ensure-float x) ,(ensure-float y)))))
+(define-compiler-macro vec (&environment env x y &optional z w)
+  (cond (w `(%vec4 ,(ensure-float-param x env) ,(ensure-float-param y env) ,(ensure-float-param z env) ,(ensure-float-param w env)))
+        (z `(%vec3 ,(ensure-float-param x env) ,(ensure-float-param y env) ,(ensure-float-param z env)))
+        (T `(%vec2 ,(ensure-float-param x env) ,(ensure-float-param y env)))))
