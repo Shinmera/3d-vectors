@@ -49,7 +49,7 @@
                  (setf ,x ,valvar ,y ,valvar ,z ,valvar ,w ,valvar)))
          (vec2 (setf ,x (vx2 ,valvar) ,y (vy2 ,valvar)))
          (vec3 (setf ,x (vx3 ,valvar) ,y (vy3 ,valvar) ,z (vz3 ,valvar)))
-         (vec4 (setf ,x (vx4 ,valvar) ,y (vy4 ,valvar) ,z (vz2 ,valvar) ,w (vw2 ,valvar))))
+         (vec4 (setf ,x (vx4 ,valvar) ,y (vy4 ,valvar) ,z (vz4 ,valvar) ,w (vw4 ,valvar))))
        ,@body)))
 
 (defmacro %2vec-op (a b combination v2red &optional (v3red v2red) (v4red v2red))
