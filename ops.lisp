@@ -78,9 +78,9 @@
        (declaim (ftype (function ((or vec real) (or vec real)) boolean) ,2vec-name))
        (declaim (ftype (function ((or vec real) &rest (or vec real)) boolean) ,name))
        (declaim (inline ,name ,2vec-name))
-       (defun ,2vec-name (a b)
+       (define-ofun ,2vec-name (a b)
          (%2vec-op a b ,op and and and))
-       (defun ,name (val &rest vals)
+       (define-ofun ,name (val &rest vals)
          (loop for prev = val then next
                for next in vals
                always (,2vec-name prev next)))
@@ -105,9 +105,9 @@
        (declaim (ftype (function ((or vec real) (or vec real)) vec) ,2vec-name))
        (declaim (ftype (function ((or vec real) &rest (or vec real)) vec) ,name))
        (declaim (inline ,name ,2vec-name))
-       (defun ,2vec-name (a b)
+       (define-ofun ,2vec-name (a b)
          (%2vec-op a b ,op vec2 vec3 vec4))
-       (defun ,name (val &rest vals)
+       (define-ofun ,name (val &rest vals)
          (loop for res = val then (,2vec-name res next)
                for next in vals
                finally (return res)))
@@ -146,7 +146,7 @@
 
 (declaim (inline vlength))
 (declaim (ftype (function (vec) #.*float-type*) vlength))
-(defun vlength (v)
+(define-ofun vlength (v)
   (etypecase v
     (vec2 (sqrt (+ (expt (vx2 v) 2)
                    (expt (vy2 v) 2))))
@@ -208,9 +208,9 @@
        (declaim (inline ,name ,2vec-name))
        (declaim (ftype (function ((or vec real) &rest (or vec real)) vec) ,name))
        (declaim (ftype (function ((or vec real) (or vec real)) vec) ,2vec-name))
-       (defun ,2vec-name (a b)
+       (define-ofun ,2vec-name (a b)
          (%2vec-op a b ,op vec2 vec3 vec4))
-       (defun ,name (val &rest vals)
+       (define-ofun ,name (val &rest vals)
          (cond ((cdr vals)
                 (apply #',nname (,2vec-name val (first vals)) (rest vals)))
                (vals (,2vec-name val (first vals)))
@@ -227,9 +227,9 @@
        (declaim (inline ,name ,2vec-name))
        (declaim (ftype (function (vec &rest (or vec real)) vec) ,name))
        (declaim (ftype (function (vec (or vec real)) vec) ,2vec-name))
-       (defun ,2vec-name (a b)
+       (define-ofun ,2vec-name (a b)
          (%2vec-op a b ,op (%vsetf a)))
-       (defun ,name (val &rest vals)
+       (define-ofun ,name (val &rest vals)
          (if vals
              (loop for v in vals
                    do (,2vec-name val v)
@@ -252,12 +252,12 @@
 
 (declaim (inline v1+))
 (declaim (ftype (function (vec) vec) v1+))
-(defun v1+ (v)
+(define-ofun v1+ (v)
   (v+ v 1))
 
 (declaim (inline v1-))
 (declaim (ftype (function (vec) vec) v1-))
-(defun v1- (v)
+(define-ofun v1- (v)
   (v- v 1))
 
 (defmacro vincf (&environment env v &optional (delta 1))
@@ -268,7 +268,7 @@
 
 (declaim (inline v.))
 (declaim (ftype (function (vec vec) #.*float-type*) v.))
-(defun v. (a b)
+(define-ofun v. (a b)
   (etypecase a
     (vec2 (+ (* (vx2 a) (vx2 b))
              (* (vy2 a) (vy2 b))))
@@ -282,7 +282,7 @@
 
 (declaim (inline vc))
 (declaim (ftype (function (vec3 vec3) vec3) vc))
-(defun vc (a b)
+(define-ofun vc (a b)
   (vec3 (- (* (vy3 a) (vz3 b))
            (* (vz3 a) (vy3 b)))
         (- (* (vz3 a) (vx3 b))
@@ -292,82 +292,90 @@
 
 (declaim (inline vabs))
 (declaim (ftype (function (vec) vec) vabs))
-(defun vabs (vec)
+(define-ofun vabs (vec)
   (vmod vec abs))
 
 (declaim (inline nvabs))
 (declaim (ftype (function (vec) vec) nvabs))
-(defun nvabs (vec)
+(define-ofun nvabs (vec)
   (vmodf vec abs))
 
 (declaim (inline vunit))
 (declaim (ftype (function (vec) vec) vunit))
-(defun vunit (a)
+(define-ofun vunit (a)
   (v/ a (vlength a)))
 
 (declaim (inline nvunit))
 (declaim (ftype (function (vec) vec) nvunit))
-(defun nvunit (vec)
+(define-ofun nvunit (vec)
   (nv/ vec (vlength vec)))
+
+(define-ofun vunit~ (a)
+  (etypecase a
+    (vec2 (let* ((x (vx2 a)) (y (vy2 a))
+                 (m (- 1 (/ (sqrt 2))))
+                 (r (/ (max x y)))
+                 (r (* r (- (1+ m) (* r m (+ x y))))))
+            (vec2 (* r x) (* r y))))))
 
 (declaim (inline vscale))
 (declaim (ftype (function (vec real) vec) vscale))
-(defun vscale (a length)
+(define-ofun vscale (a length)
   (nv* (vunit a) length))
 
 (declaim (inline nvscale))
 (declaim (ftype (function (vec real) vec) vscale))
-(defun nvscale (vec length)
+(define-ofun nvscale (vec length)
   (nv* (nvunit vec) length))
 
 (declaim (inline vclamp))
-(declaim (ftype (function ((or vec real) (or vec real) (or vec real)) vec) vclamp))
-(defun vclamp (lower a upper)
-  (etypecase a
+(declaim (ftype (function ((or vec real) vec (or vec real)) vec) vclamp))
+(define-ofun vclamp (lower vec upper)
+  (etypecase vec
     (vec2 (with-vec2 (lx ly) lower
             (with-vec2 (ux uy) upper
-              (vec2 (min ux (max lx (vx2 a)))
-                    (min uy (max ly (vy2 a)))))))
+              (vec2 (min ux (max lx (vx2 vec)))
+                    (min uy (max ly (vy2 vec)))))))
     (vec3 (with-vec3 (lx ly lz) lower
             (with-vec3 (ux uy uz) upper
-              (vec3 (min ux (max lx (vx3 a)))
-                    (min uy (max ly (vy3 a)))
-                    (min uz (max lz (vz3 a)))))))
+              (vec3 (min ux (max lx (vx3 vec)))
+                    (min uy (max ly (vy3 vec)))
+                    (min uz (max lz (vz3 vec)))))))
     (vec4 (with-vec4 (lx ly lz lw) lower
             (with-vec4 (ux uy uz uw) upper
-              (vec4 (min ux (max lx (vx4 a)))
-                    (min uy (max ly (vy4 a)))
-                    (min uz (max lz (vz4 a)))
-                    (min uw (max lw (vw4 a)))))))))
+              (vec4 (min ux (max lx (vx4 vec)))
+                    (min uy (max ly (vy4 vec)))
+                    (min uz (max lz (vz4 vec)))
+                    (min uw (max lw (vw4 vec)))))))))
 
 (declaim (inline nvclamp))
 (declaim (ftype (function ((or vec real) vec (or vec real))) nvclamp))
-(defun nvclamp (lower vec upper)
-  (etypecase a
+(define-ofun nvclamp (lower vec upper)
+  (etypecase vec
     (vec2 (with-vec2 (lx ly) lower
             (with-vec2 (ux uy) upper
-              (%vsetf vec (min ux (max lx (vx2 a)))
-                          (min uy (max ly (vy2 a)))))))
+              (%vsetf vec (min ux (max lx (vx2 vec)))
+                          (min uy (max ly (vy2 vec)))))))
     (vec3 (with-vec3 (lx ly lz) lower
             (with-vec3 (ux uy uz) upper
-              (%vestf vec (min ux (max lx (vx3 a)))
-                          (min uy (max ly (vy3 a)))
-                          (min uz (max lz (vz3 a)))))))
+              (%vsetf vec (min ux (max lx (vx3 vec)))
+                          (min uy (max ly (vy3 vec)))
+                          (min uz (max lz (vz3 vec)))))))
     (vec4 (with-vec4 (lx ly lz lw) lower
             (with-vec4 (ux uy uz uw) upper
-              (%vsetf vec (min ux (max lx (vx4 a)))
-                          (min uy (max ly (vy4 a)))
-                          (min uz (max lz (vz4 a)))
-                          (min uw (max lw (vw4 a)))))))))
+              (%vsetf vec (min ux (max lx (vx4 vec)))
+                          (min uy (max ly (vy4 vec)))
+                          (min uz (max lz (vz4 vec)))
+                          (min uw (max lw (vw4 vec)))))))))
 
 (declaim (inline vlimit))
-(declaim (ftype (function ((or vec real) (or vec real)) vec) vlimit))
-(defun vlimit (a limit)
-  (vclamp (- limit) a limit))
+(declaim (ftype (function (vec (or vec real)) vec) vlimit))
+(define-ofun vlimit (vec limit)
+  (vclamp (- limit) vec limit))
 
 (declaim (inline nvlimit))
 (declaim (ftype (function (vec (or vec real)) vec) nvlimit))
-(defun nvlimit (vec limit)
+(define-ofun nvlimit (vec limit)
   (nvclamp (- limit) vec limit))
 
 (defmacro %vecrot-internal (&body body)
@@ -386,24 +394,26 @@
 
 (declaim (inline vrot))
 (declaim (ftype (function (vec3 vec3 real) vec3) vrot))
-(defun vrot (v axis phi)
-  (%vecrot-internal
-    (vec (arith vx3) (arith vy3) (arith vz3))))
+(define-ofun vrot (v axis phi)
+  (let ((phi (ensure-float phi)))
+    (%vecrot-internal
+      (vec3 (arith vx3) (arith vy3) (arith vz3)))))
 
 (declaim (inline nvrot))
 (declaim (ftype (function (vec3 vec3 real) vec3) nvrot))
-(defun nvrot (v axis phi)
+(define-ofun nvrot (v axis phi)
   ;; https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
   ;; vr = v*cos(phi) + (kxv)*sin(phi) + k*(k*v)*(1-cos(phi)
-  (%vecrot-internal
-    (setf (vx3 v) (arith vx3)
-          (vy3 v) (arith vy3)
-          (vz3 v) (arith vz3))
-    v))
+  (let ((phi (ensure-float phi)))
+    (%vecrot-internal
+      (setf (vx3 v) (arith vx3)
+            (vy3 v) (arith vy3)
+            (vz3 v) (arith vz3))
+      v)))
 
 (declaim (inline vrotv))
 (declaim (ftype (function (vec3 vec3) vec3) vrotv))
-(defun vrotv (a b)
+(define-ofun vrotv (a b)
   (vrot (vrot (vrot a
                     +vx+ (vx3 b))
               +vy+ (vy3 b))
@@ -411,14 +421,14 @@
 
 (declaim (inline nvrotv))
 (declaim (ftype (function (vec3 vec3) vec3) nvrotv))
-(defun nvrotv (a b)
+(define-ofun nvrotv (a b)
   (nvrot (nvrot (nvrot a
                        +vx+ (vx3 b))
                 +vy+ (vy3 b))
          +vz+ (vz3 b)))
 
 (declaim (ftype (function (vec symbol &optional symbol symbol symbol) vec) vorder))
-(defun vorder (v x &optional y z w)
+(define-ofun vorder (v x &optional y z w)
   (flet ((component (n)
            (ecase n
              ((vx x :x) (vx v))
@@ -454,7 +464,7 @@
            (vec4 (vec ,(component x) ,(component y) ,(component z) ,(component w))))))))
 
 (declaim (ftype (function (vec symbol &optional symbol symbol symbol) vec) vorder))
-(defun nvorder (v x &optional y z w)
+(define-ofun nvorder (v x &optional y z w)
   (flet ((component (n)
            (ecase n
              ((vx x :x) (vx v))
