@@ -24,12 +24,22 @@
         (T `(load-time-value (ensure-float ,val))))
       `(ensure-float ,val)))
 
+(defmacro define-vecx-accessor (name rel)
+  `(progn
+     (declaim (ftype (function (vec) ,*float-type*) ,name))
+     (setf (fdefinition ',name) (fdefinition ',rel))
+     (defsetf ,name (&environment env vec) (value)
+       `(setf (,',rel ,vec) ,(ensure-float-param value env)))))
+
 (defstruct (vec2 (:conc-name NIL)
                  (:constructor %vec2 (%vx2 %vy2))
                  (:copier vcopy2)
                  (:predicate vec2-p))
   (%vx2 (ensure-float 0) :type #.*float-type*)
   (%vy2 (ensure-float 0) :type #.*float-type*))
+
+(define-vecx-accessor vx2 %vx2)
+(define-vecx-accessor vy2 %vy2)
 
 (declaim (inline vec2))
 (declaim (ftype (function (real real) vec2) vec2))
@@ -41,7 +51,7 @@
 
 (defmethod make-load-form ((v vec2) &optional env)
   (declare (ignore env))
-  `(vec2 ,(vx v) ,(vy v)))
+  `(vec2 ,(vx2 v) ,(vy2 v)))
 
 (define-compiler-macro vec2 (&whole whole &environment env x y)
   `(%vec2 ,(ensure-float-param x env)
@@ -54,6 +64,10 @@
   (%vx3 (ensure-float 0) :type #.*float-type*)
   (%vy3 (ensure-float 0) :type #.*float-type*)
   (%vz3 (ensure-float 0) :type #.*float-type*))
+
+(define-vecx-accessor vx3 %vx3)
+(define-vecx-accessor vy3 %vy3)
+(define-vecx-accessor vz3 %vz3)
 
 (declaim (inline vec3))
 (declaim (ftype (function (real real real) vec3) vec3))
@@ -70,7 +84,7 @@
 
 (defmethod make-load-form ((v vec3) &optional env)
   (declare (ignore env))
-  `(vec3 ,(vx v) ,(vy v) ,(vz v)))
+  `(vec3 ,(vx3 v) ,(vy3 v) ,(vz3 v)))
 
 (defstruct (vec4 (:conc-name NIL)
                  (:constructor %vec4 (%vx4 %vy4 %vz4 %vw4))
@@ -80,6 +94,11 @@
   (%vy4 (ensure-float 0) :type #.*float-type*)
   (%vz4 (ensure-float 0) :type #.*float-type*)
   (%vw4 (ensure-float 0) :type #.*float-type*))
+
+(define-vecx-accessor vx4 %vx4)
+(define-vecx-accessor vy4 %vy4)
+(define-vecx-accessor vz4 %vz4)
+(define-vecx-accessor vw4 %vw4)
 
 (declaim (inline vec4))
 (declaim (ftype (function (real real real) vec4) vec4))
@@ -97,7 +116,7 @@
 
 (defmethod make-load-form ((v vec4) &optional env)
   (declare (ignore env))
-  `(vec4 ,(vx v) ,(vy v) ,(vz v) ,(vw v)))
+  `(vec4 ,(vx4 v) ,(vy4 v) ,(vz4 v) ,(vw4 v)))
 
 ;; Backwards-compat
 (deftype vec () '(or vec2 vec3 vec4))
@@ -129,9 +148,9 @@
 (declaim (inline vcopy))
 (defun vcopy (vec)
   (etypecase vec
-    (vec2 (vec2 (vx vec) (vy vec)))
-    (vec3 (vec3 (vx vec) (vy vec) (vz vec)))
-    (vec4 (vec4 (vx vec) (vy vec) (vz vec) (vw vec)))))
+    (vec2 (vec2 (vx2 vec) (vy2 vec)))
+    (vec3 (vec3 (vx3 vec) (vy3 vec) (vz3 vec)))
+    (vec4 (vec4 (vx4 vec) (vy4 vec) (vz4 vec) (vw4 vec)))))
 
 (declaim (inline vec))
 (declaim (ftype (function (real real &optional real real) vec) vec))
