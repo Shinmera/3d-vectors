@@ -14,6 +14,7 @@
   :homepage "https://github.com/Shinmera/3d-vectors"
   :serial T
   :components ((:file "package")
+               (:file "toolkit")
                (:file "struct")
                (:file "ops")
                (:file "documentation"))

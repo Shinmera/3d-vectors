@@ -6,24 +6,6 @@
 
 (in-package #:org.shirakumo.flare.vector)
 
-#+3d-vectors-double-floats (pushnew :3d-vectors-double-floats *features*)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *float-type*
-    #+3d-vectors-double-floats 'double-float
-    #-3d-vectors-double-floats 'single-float))
-
-(declaim (inline ensure-float))
-(declaim (ftype (function (real) #.*float-type*)))
-(defun ensure-float (thing)
-  (coerce thing '#.*float-type*))
-
-(defun ensure-float-param (val env)
-  (if (constantp val env)
-      (typecase val
-        (real (ensure-float val))
-        (T `(load-time-value (ensure-float ,val))))
-      `(ensure-float ,val)))
-
 (defmacro define-vecx-accessor (name rel)
   `(progn
      (declaim (ftype (function (vec) ,*float-type*) ,name))
@@ -43,7 +25,7 @@
 
 (declaim (inline vec2))
 (declaim (ftype (function (real real) vec2) vec2))
-(defun vec2 (x y)
+(define-ofun vec2 (x y)
   (%vec2 (ensure-float x) (ensure-float y)))
 
 (defmethod print-object ((v vec2) stream)
@@ -71,7 +53,7 @@
 
 (declaim (inline vec3))
 (declaim (ftype (function (real real real) vec3) vec3))
-(defun vec3 (x y z)
+(define-ofun vec3 (x y z)
   (%vec3 (ensure-float x) (ensure-float y) (ensure-float z)))
 
 (define-compiler-macro vec3 (&whole whole &environment env x y z)
@@ -101,8 +83,8 @@
 (define-vecx-accessor vw4 %vw4)
 
 (declaim (inline vec4))
-(declaim (ftype (function (real real real) vec4) vec4))
-(defun vec4 (x y z w)
+(declaim (ftype (function (real real real real) vec4) vec4))
+(define-ofun vec4 (x y z w)
   (%vec4 (ensure-float x) (ensure-float y) (ensure-float z) (ensure-float w)))
 
 (define-compiler-macro vec4 (&whole whole &environment env x y z w)
@@ -125,7 +107,7 @@
   `(progn
      (declaim (inline ,name))
      (declaim (ftype (function (vec) ,*float-type*)))
-     (defun ,name (vec)
+     (define-ofun ,name (vec)
        (etypecase vec
          ,@(when a3 `((vec3 (,a3 vec))))
          ,@(when a4 `((vec4 (,a4 vec))))
@@ -142,11 +124,11 @@
 (define-vec-accessor vw NIL   NIL %vw4)
 
 (declaim (inline vec))
-(defun vec-p (vec)
+(define-ofun vec-p (vec)
   (etypecase vec (vec2 T) (vec3 T) (vec4 T)))
 
 (declaim (inline vcopy))
-(defun vcopy (vec)
+(define-ofun vcopy (vec)
   (etypecase vec
     (vec2 (vec2 (vx2 vec) (vy2 vec)))
     (vec3 (vec3 (vx3 vec) (vy3 vec) (vz3 vec)))
@@ -154,7 +136,7 @@
 
 (declaim (inline vec))
 (declaim (ftype (function (real real &optional real real) vec) vec))
-(defun vec (x y &optional z w)
+(define-ofun vec (x y &optional z w)
   (cond (w (%vec4 (ensure-float x) (ensure-float y) (ensure-float z) (ensure-float w)))
         (z (%vec3 (ensure-float x) (ensure-float y) (ensure-float z)))
         (T (%vec2 (ensure-float x) (ensure-float y)))))
