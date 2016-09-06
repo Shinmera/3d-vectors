@@ -343,30 +343,32 @@
 (declaim (inline nvclamp))
 (declaim (ftype (function ((or vec real) vec (or vec real))) nvclamp))
 (defun nvclamp (lower vec upper)
-  (with-vec (lx ly lz) lower
-    (with-vec (ux uy uz) upper
-      (setf (vx vec) (min ux (max lx (vx vec)))
-            (vy vec) (min uy (max ly (vy vec)))
-            (vz vec) (min uz (max lz (vz vec))))
-      vec)))
+  (etypecase a
+    (vec2 (with-vec2 (lx ly) lower
+            (with-vec2 (ux uy) upper
+              (%vsetf vec (min ux (max lx (vx2 a)))
+                          (min uy (max ly (vy2 a)))))))
+    (vec3 (with-vec3 (lx ly lz) lower
+            (with-vec3 (ux uy uz) upper
+              (%vestf vec (min ux (max lx (vx3 a)))
+                          (min uy (max ly (vy3 a)))
+                          (min uz (max lz (vz3 a)))))))
+    (vec4 (with-vec4 (lx ly lz lw) lower
+            (with-vec4 (ux uy uz uw) upper
+              (%vsetf vec (min ux (max lx (vx4 a)))
+                          (min uy (max ly (vy4 a)))
+                          (min uz (max lz (vz4 a)))
+                          (min uw (max lw (vw4 a)))))))))
 
 (declaim (inline vlimit))
 (declaim (ftype (function ((or vec real) (or vec real)) vec) vlimit))
 (defun vlimit (a limit)
-  (with-vec (x y z) a
-    (with-vec (ux uy uz) limit
-      (vec (min ux (max (- ux) x))
-           (min uy (max (- uy) y))
-           (min uz (max (- uz) z))))))
+  (vclamp (- limit) a limit))
 
 (declaim (inline nvlimit))
 (declaim (ftype (function (vec (or vec real)) vec) nvlimit))
 (defun nvlimit (vec limit)
-  (with-vec (ux uy uz) limit
-    (setf (vx vec) (min ux (max (- ux) (vx vec)))
-          (vy vec) (min uy (max (- uy) (vy vec)))
-          (vz vec) (min uz (max (- uz) (vz vec))))
-    vec))
+  (nvclamp (- limit) vec limit))
 
 (defmacro %vecrot-internal (&body body)
   ;; https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
