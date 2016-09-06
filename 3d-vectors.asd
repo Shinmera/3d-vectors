@@ -15,6 +15,7 @@
   :serial T
   :components ((:file "package")
                (:file "toolkit")
+               #+sbcl (:file "ssa")
                (:file "struct")
                (:file "ops")
                (:file "documentation"))

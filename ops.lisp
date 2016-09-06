@@ -316,7 +316,14 @@
                  (m (- 1 (/ (sqrt 2))))
                  (r (/ (max x y)))
                  (r (* r (- (1+ m) (* r m (+ x y))))))
-            (vec2 (* r x) (* r y))))))
+            (vec2 (* r x) (* r y))))
+    (vec4 #+sbcl (multiple-value-bind (x y z w) (simd-vunit (vx4 a) (vy4 a) (vz4 a) (vw4 a))
+                   (vec4 x y z w)))))
+
+(define-ofun nvunit~ (a)
+  (etypecase a
+    (vec4 #+sbcl (multiple-value-bind (x y z w) (simd-vunit (vx4 a) (vy4 a) (vz4 a) (vw4 a))
+                   (%vsetf a x y z w)))))
 
 (declaim (inline vscale))
 (declaim (ftype (function (vec real) vec) vscale))
