@@ -6,11 +6,11 @@
 
 (in-package #:cl-user)
 (asdf:defsystem 3d-vectors
-  :version "2.1.0"
+  :version "3.0.0"
   :license "Artistic"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
-  :description "A small utility library implementing basic 3d vector functionality."
+  :description "A utility library implementing 2D, 3D, and 4D vector functionality."
   :homepage "https://github.com/Shinmera/3d-vectors"
   :serial T
   :components ((:file "package")
