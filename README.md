@@ -11,9 +11,9 @@ Create a vector:
 
     (vec 0 0 0)
 
-Vectors always use `float`s. All operations should accept `real` numbers though, for convenience. All vector operations will return a `vec` and are prefixed with a `v` to allow importing of the package. 
+Vectors always use `float`s. Where sensible, operations should accept `real` numbers for convenience. All vector operations are prefixed with a `v` to allow importing the package without conflicts. 
 
-    (v+ 1 2 3 (vec 4 5 6))
+    (v+ (vec 1 2 3) 4 5 6)
 
 3d-vectors implements pretty much all vector operations you might need, including comparators, dot and cross product, and rotation. There's also modifying variants of all operators, which have the same name, except they are prefixed by an `n`.
 
@@ -23,11 +23,11 @@ Vectors always use `float`s. All operations should accept `real` numbers though,
 
 `vec`s are dumpable, meaning you can insert them as literals into your code and they will be properly saved to and restored from a FASL.
 
-The type `vec` includes all three subtypes, `vec2`, `vec3`, and `vec4`. Each of the three also has their own accessors that are suffixed with the dimension number. While the standard `vx`, `vy`, `vz`, and `vw` will result in the lower-level variants anyway, it is usually a good idea to use `vx2` etc if the type is already known to avoid unnecessary dispatch or branch elimination.
+The type `vec` includes all three subtypes `vec2`, `vec3`, and `vec4`. Each of the three also has its own accessors that are suffixed with the dimension number. While the standard `vx`, `vy`, `vz`, and `vw` will result in the lower-level variants through an `etypecase`, it is usually a good idea to use `vx2` etc if the type is already known to avoid unnecessary dispatch or branch elimination.
 
-While most of the operations work on all three variants, you cannot intermix them. For example, `(v+ (vec 1 2) (vec 1 2 3))` will signal an error. This is because it is often ambiguous and thus likely confusing as to what might happen in such a case. Would it be upgraded to a `vec3` or downgraded to a `vec2`? In order to avoid this ambiguity, it is simply left up to you to ensure proper types.
+While most of the operations work on all three variants, you cannot intermix them. For example, `(v+ (vec 1 2) (vec 1 2 3))` will signal an error. This is because it is often ambiguous and thus likely confusing as to what might happen in such a case. Should the result be upgraded to a `vec3` or downgraded to a `vec2`? In order to avoid this ambiguity, it is simply left up to you to ensure proper types.
 
-One convenient way to switch around between the types and generally flip around the vector fields is swizzling. Similar to the single-field accessors, there's multi-field variants that construct a new vector from the specified fields of the necessary length. For example.
+One convenient way to switch around between the types and generally flip around the vector fields is swizzling: similar to the single-field accessors, there's multi-field readers that construct a new vector from the specified fields of the necessary length.
 
     (vxy (vec 1 2 3))    ; => (vec2 1 2)
     (vxy_ (vec 1 2))     ; => (vec3 1 2 0)
