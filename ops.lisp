@@ -529,6 +529,8 @@
          (declaim (ftype (function (vec) vec) ,name))
          (export ',name) ;; Haha no way, I'm not writing all these into the package listing.
          (defun ,name (vec)
+           ,(format NIL "Swizzles the vector into a ~aD one, filling its fields with the ~{~#[~;~a~;~a and ~a~:;~@{~a~#[~;, and ~:;, ~]~}~]~} components of the given vector respectively."
+                    (length comps) comps)
            (etypecase vec
              ,@(loop for d in (or (append (when (subsetp comps '(_ x y)) '(vec2))
                                           (when (subsetp comps '(_ x y z)) '(vec3))
