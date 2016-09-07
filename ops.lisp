@@ -179,7 +179,7 @@
          (vec4 (%vsetf ,v ,x ,y ,z ,w)))
        ,v)))
 
-(defmacro vmod (&environment env vec op &optional x y z w)
+(defmacro vapply (&environment env vec op &optional x y z w)
   (let ((v (gensym "VEC")))
     `(let ((,v ,vec))
        (etypecase ,v
@@ -193,7 +193,7 @@
                      (,op (vz4 ,v) ,@(when z (list (ensure-float-param z env))))
                      (,op (vw4 ,v) ,@(when w (list (ensure-float-param w env))))))))))
 
-(defmacro vmodf (&environment env vec op &optional x y z w)
+(defmacro vapplyf (&environment env vec op &optional x y z w)
   (let ((v (gensym "VEC")))
     `(let ((,v ,vec))
        (vsetf ,v (,op (vx ,v) ,@(when x (list (ensure-float-param x env))))
@@ -214,10 +214,10 @@
          (cond ((cdr vals)
                 (apply #',nname (,2vec-name val (first vals)) (rest vals)))
                (vals (,2vec-name val (first vals)))
-               (T (vmod val ,op))))
+               (T (vapply val ,op))))
        (define-compiler-macro ,name (val &rest vals)
          (case (length vals)
-           (0 `(vmod ,val ,',op))
+           (0 `(vapply ,val ,',op))
            (1 `(,',2vec-name ,val ,(first vals)))
            (T `(,',nname (,',2vec-name ,val ,(first val)) ,@(rest val))))))))
 
@@ -234,10 +234,10 @@
              (loop for v in vals
                    do (,2vec-name val v)
                    finally (return val))
-             (vmodf val ,op)))
+             (vapplyf val ,op)))
        (define-compiler-macro ,name (val &rest vals)
          (case (length vals)
-           (0 `(vmodf ,val ,',op))
+           (0 `(vapplyf ,val ,',op))
            (1 `(,',2vec-name ,val ,(first vals)))
            (T `(,',name (,',2vec-name ,val ,(first vals)) ,@(rest vals))))))))
 
@@ -293,12 +293,22 @@
 (declaim (inline vabs))
 (declaim (ftype (function (vec) vec) vabs))
 (define-ofun vabs (vec)
-  (vmod vec abs))
+  (vapply vec abs))
 
 (declaim (inline nvabs))
 (declaim (ftype (function (vec) vec) nvabs))
 (define-ofun nvabs (vec)
-  (vmodf vec abs))
+  (vapplyf vec abs))
+
+(declaim (inline vmod))
+(declaim (ftype (function (vec real) vec) vmod))
+(define-ofun vmod (vec divisor)
+  (vapply vec mod divisor divisor divisor divisor))
+
+(declaim (inline nvmod))
+(declaim (ftype (function (vec real) vec) nvmod))
+(define-ofun nvmod (vec divisor)
+  (vapplyf vec mod divisor divisor divisor divisor))
 
 (declaim (inline vunit))
 (declaim (ftype (function (vec) vec) vunit))
@@ -409,8 +419,6 @@
 (declaim (inline nvrot))
 (declaim (ftype (function (vec3 vec3 real) vec3) nvrot))
 (define-ofun nvrot (v axis phi)
-  ;; https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
-  ;; vr = v*cos(phi) + (kxv)*sin(phi) + k*(k*v)*(1-cos(phi)
   (let ((phi (ensure-float phi)))
     (%vecrot-internal
       (setf (vx3 v) (arith vx3)
@@ -509,8 +517,6 @@
          (mapcar #'list (first lists)))
         (T
          NIL)))
-
-(defun subsetü)
 
 (defmacro define-swizzler (&rest comps)
   (flet ((%vec-accessor (dim type)
