@@ -10,6 +10,9 @@
   (:use #:cl)
   ;; ops.lisp
   (:export
+   #:with-vec2
+   #:with-vec3
+   #:with-vec4
    #:with-vec
    #:v=
    #:v<
@@ -18,11 +21,22 @@
    #:v>=
    #:vmin
    #:vmax
+   #:+vx2+
+   #:+vy2+
+   #:+vx3+
+   #:+vy3+
+   #:+vz3+
+   #:+vx4+
+   #:+vy4+
+   #:+vz4+
+   #:+vw4+
    #:+vx+
    #:+vy+
    #:+vz+
    #:vlength
    #:vsetf
+   #:vapply
+   #:vapplyf
    #:v+
    #:v-
    #:v*
@@ -39,6 +53,8 @@
    #:vc
    #:vabs
    #:nvabs
+   #:vmod
+   #:nvmod
    #:vunit
    #:nvunit
    #:vscale
@@ -52,13 +68,34 @@
    #:vrotv
    #:nvrotv
    #:vorder
-   #:nvorder)
+   #:nvorder
+   ;; swizzlers are autoexport.
+   )
   ;; struct.lisp
   (:export
+   #:vec2
+   #:vec2-p
+   #:vcopy2
+   #:vx2
+   #:vy2
+   #:vec3
+   #:vec3-p
+   #:vcopy3
+   #:vx3
+   #:vy3
+   #:vz3
+   #:vec4
+   #:vec4-p
+   #:vcopy4
+   #:vx4
+   #:vy4
+   #:vz4
+   #:vw4
    #:vec
    #:vec-p
    #:vcopy
    #:vx
    #:vy
    #:vz
+   #:vw
    #:vec))
