@@ -8,8 +8,9 @@
 
 (defmacro define-vecx-accessor (name rel)
   `(progn
+     (declaim (inline ,name))
      (declaim (ftype (function (vec) ,*float-type*) ,name))
-     (setf (fdefinition ',name) (fdefinition ',rel))
+     (defun ,name (vec) (,rel vec))
      (defsetf ,name (&environment env vec) (value)
        `(setf (,',rel ,vec) ,(ensure-float-param value env)))))
 
