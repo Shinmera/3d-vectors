@@ -1,5 +1,5 @@
 ## About 3d-vectors
-This is a simple library for 3D vectors. It contains most of the vector operations one would usually expect out of such a library and offers them both in non-modifying and modifying versions where applicable. It also tries to be efficient where plausible. Each vector is made up of a triplet of `float`s, which by default are `single-float`s, as they do not require value boxing on most modern systems and compilers.
+This is a library for vector math in 3D space. It contains most of the vector operations one would usually expect out of such a library and offers them both in non-modifying and modifying versions where applicable. It also tries to be efficient where plausible. Each vector is made up of `float`s, which by default are `single-float`s, as they do not require value boxing on most modern systems and compilers. Despite the name of this library, 2D and 4D vectors are supported as well.
 
 ## How To
 Load it through ASDF or Quicklisp
@@ -11,7 +11,7 @@ Create a vector:
 
     (vec 0 0 0)
 
-Vectors always use a triplet of `float`s. All operations should accept `real` numbers though, for convenience. All vector operations will return a `vec` and are prefixed with a `v` to allow importing of the package. 
+Vectors always use `float`s. All operations should accept `real` numbers though, for convenience. All vector operations will return a `vec` and are prefixed with a `v` to allow importing of the package. 
 
     (v+ 1 2 3 (vec 4 5 6))
 
@@ -23,4 +23,16 @@ Vectors always use a triplet of `float`s. All operations should accept `real` nu
 
 `vec`s are dumpable, meaning you can insert them as literals into your code and they will be properly saved to and restored from a FASL.
 
-If you require higher precision than `single-float`s ensure, you can add `:3d-vectors-double-floats` to `*features*` and recompile the library `(asdf:compile-system :3d-vectors :force T)`. Similarly, if you want to switch back to `single-float`s, you can remove the feature and recompile. Both at the same time is not currently possible as it would increase complexity in the library and make certain operations much slower.
+The type `vec` includes all three subtypes, `vec2`, `vec3`, and `vec4`. Each of the three also has their own accessors that are suffixed with the dimension number. While the standard `vx`, `vy`, `vz`, and `vw` will result in the lower-level variants anyway, it is usually a good idea to use `vx2` etc if the type is already known to avoid unnecessary dispatch or branch elimination.
+
+While most of the operations work on all three variants, you cannot intermix them. For example, `(v+ (vec 1 2) (vec 1 2 3))` will signal an error. This is because it is often ambiguous and thus likely confusing as to what might happen in such a case. Would it be upgraded to a `vec3` or downgraded to a `vec2`? In order to avoid this ambiguity, it is simply left up to you to ensure proper types.
+
+One convenient way to switch around between the types and generally flip around the vector fields is swizzling. Similar to the single-field accessors, there's multi-field variants that construct a new vector from the specified fields of the necessary length. For example.
+
+    (vxy (vec 1 2 3))    ; => (vec2 1 2)
+    (vxy_ (vec 1 2))     ; => (vec3 1 2 0)
+    (vwwx (vec 1 2 3 4)) ; => (vec3 4 4 1)
+
+The `_` can be used anywhere within swizzle operators in order to pad the vector with a zero.
+
+If you require higher precision than `single-float`s ensure, you can add `:3d-vectors-double-floats` to `*features*` and recompile the library `(asdf:compile-system :3d-vectors :force T)`. Similarly, if you want to switch back to `single-float`s, you can remove the feature and recompile. Both at the same time is not supported as it would increase complexity in the library massively and make certain operations much slower.
