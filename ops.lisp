@@ -508,16 +508,6 @@
       `(let ((,v ,vec))
          (vsetf ,v ,(component x) ,(component y) ,(component z) ,(component w))))))
 
-(defun permute (&rest lists)
-  (cond ((cdr lists)
-         (let ((sub (apply #'permute (rest lists))))
-           (loop for item in (first lists)
-                 append (loop for s in sub collect (list* item s)))))
-        (lists
-         (mapcar #'list (first lists)))
-        (T
-         NIL)))
-
 (defmacro define-swizzler (&rest comps)
   (flet ((%vec-accessor (dim type)
            (if (eql dim '_)
@@ -542,8 +532,17 @@
                                      (4 `(vec4 ,@(loop for comp in comps collect (%vec-accessor comp d)))))))))))))
 
 (defmacro define-all-swizzlers (size)
-  `(progn ,@(loop for comps in (apply #'permute (loop repeat size collect '(_ x y z w)))
-                  collect `(define-swizzler ,@comps))))
+  (labels ((permute (&rest lists)
+             (cond ((cdr lists)
+                    (let ((sub (apply #'permute (rest lists))))
+                      (loop for item in (first lists)
+                            append (loop for s in sub collect (list* item s)))))
+                   (lists
+                    (mapcar #'list (first lists)))
+                   (T
+                    NIL))))
+    `(progn ,@(loop for comps in (apply #'permute (loop repeat size collect '(_ x y z w)))
+                    collect `(define-swizzler ,@comps)))))
 
 (define-all-swizzlers 2)
 (define-all-swizzlers 3)
