@@ -19,4 +19,4 @@
                (:file "struct")
                (:file "ops")
                (:file "documentation"))
-  :depends-on ())
+  :depends-on (:documentation-utils))
