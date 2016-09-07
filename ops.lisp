@@ -499,3 +499,43 @@
                     ((NIL) 0.0)))))
       `(let ((,v ,vec))
          (vsetf ,v ,(component x) ,(component y) ,(component z) ,(component w))))))
+
+(defun permute (&rest lists)
+  (cond ((cdr lists)
+         (let ((sub (apply #'permute (rest lists))))
+           (loop for item in (first lists)
+                 append (loop for s in sub collect (list* item s)))))
+        (lists
+         (mapcar #'list (first lists)))
+        (T
+         NIL)))
+
+(defun subsetü)
+
+(defmacro define-swizzler (&rest comps)
+  (flet ((%vec-accessor (dim type)
+           (if (eql dim '_)
+               (ensure-float 0)
+               (list (intern (format NIL "~a~a~a" 'v dim (subseq (string type) 3))) 'vec))))
+    (let ((name (intern (format NIL "~a~{~a~}" 'v comps))))
+      `(progn
+         (declaim (inline ,name))
+         (declaim (ftype (function (vec) vec) ,name))
+         (defun ,name (vec)
+           (etypecase vec
+             ,@(loop for d in (or (append (when (subsetp comps '(_ x y)) '(vec2))
+                                          (when (subsetp comps '(_ x y z)) '(vec3))
+                                          (when (subsetp comps '(_ x y z w)) '(vec4)))
+                                  (error "Unknown comps: ~a" comps))
+                     collect `(,d ,(ecase (length comps)
+                                     (2 `(vec2 ,@(loop for comp in comps collect (%vec-accessor comp d))))
+                                     (3 `(vec3 ,@(loop for comp in comps collect (%vec-accessor comp d))))
+                                     (4 `(vec4 ,@(loop for comp in comps collect (%vec-accessor comp d)))))))))))))
+
+(defmacro define-all-swizzlers (size)
+  `(progn ,@(loop for comps in (apply #'permute (loop repeat size collect '(_ x y z w)))
+                  collect `(define-swizzler ,@comps))))
+
+(define-all-swizzlers 2)
+(define-all-swizzlers 3)
+(define-all-swizzlers 4)
