@@ -527,6 +527,7 @@
       `(progn
          (declaim (inline ,name))
          (declaim (ftype (function (vec) vec) ,name))
+         (export ',name) ;; Haha no way, I'm not writing all these into the package listing.
          (defun ,name (vec)
            (etypecase vec
              ,@(loop for d in (or (append (when (subsetp comps '(_ x y)) '(vec2))
