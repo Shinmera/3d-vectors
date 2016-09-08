@@ -219,7 +219,7 @@
          (case (length vals)
            (0 `(vapply ,val ,',op))
            (1 `(,',2vec-name ,val ,(first vals)))
-           (T `(,',nname (,',2vec-name ,val ,(first val)) ,@(rest val))))))))
+           (T `(,',nname (,',2vec-name ,val ,(first val)) ,@(rest vals))))))))
 
 (defmacro define-nvecop (name op)
   (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
