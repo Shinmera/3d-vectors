@@ -126,7 +126,7 @@
 
 (declaim (inline vec))
 (define-ofun vec-p (vec)
-  (etypecase vec (vec2 T) (vec3 T) (vec4 T)))
+  (typecase vec (vec2 T) (vec3 T) (vec4 T)))
 
 (declaim (inline vcopy))
 (define-ofun vcopy (vec)
