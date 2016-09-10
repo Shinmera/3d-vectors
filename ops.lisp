@@ -72,14 +72,14 @@
                (real (let ((b (ensure-float b))) (,@v2red (,combination (vx2 a) b) (,combination (vy2 a) b))))
                (vec2 (,@v2red (,combination (vx2 a) (vx2 b)) (,combination (vy2 a) (vy2 b)))))))))
 
-(defmacro define-veccomp (name op)
+(defmacro define-veccomp (name op &optional (bundle 'and))
   (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
     `(progn
        (declaim (ftype (function ((or vec real) (or vec real)) boolean) ,2vec-name))
        (declaim (ftype (function ((or vec real) &rest (or vec real)) boolean) ,name))
        (declaim (inline ,name ,2vec-name))
        (define-ofun ,2vec-name (a b)
-         (%2vec-op a b ,op and and and))
+         (%2vec-op a b ,op ,bundle ,bundle ,bundle))
        (define-ofun ,name (val &rest vals)
          (loop for prev = val then next
                for next in vals
@@ -93,7 +93,7 @@
                             collect `(,',2vec-name ,prev ,next)))))))))
 
 (define-veccomp v= =)
-(define-veccomp v/= /=)
+(define-veccomp v/= /= or)
 (define-veccomp v< <)
 (define-veccomp v<= <=)
 (define-veccomp v> >)
