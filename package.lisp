@@ -15,6 +15,7 @@
    #:with-vec4
    #:with-vec
    #:v=
+   #:v/=
    #:v<
    #:v<=
    #:v>
