@@ -13,7 +13,6 @@
   :description "Tests for the 3d-vectors system."
   :homepage "https://github.com/Shinmera/3d-vectors"
   :serial T
-  :components ((:test-file "test"))
-  :defsystem-depends-on (:prove-asdf)
-  :depends-on (:3d-vectors :prove)
-  :perform (asdf:test-op :after (op c) (funcall (intern (string :run) :prove) c)))
+  :components ((:file "test"))
+  :depends-on (:3d-vectors :parachute)
+  :perform (asdf:test-op (op c) (uiop:symbol-call :parachute :test :3d-vectors-test)))
