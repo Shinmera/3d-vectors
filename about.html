@@ -71,6 +71,12 @@
 <p>The <code>_</code> can be used anywhere within swizzle operators in order to pad the vector with a zero.</p>
 
 <p>If you require higher precision than <code><a href="http://l1sp.org/cl/single-float">single-float</a></code>s ensure, you can add <code>:3d-vectors-double-floats</code> to <code><a href="http://l1sp.org/cl/*features*">*features*</a></code> and recompile the library <code>(asdf:compile-system :3d-vectors :force T)</code>. Similarly, if you want to switch back to <code><a href="http://l1sp.org/cl/single-float">single-float</a></code>s, you can remove the feature and recompile. Both at the same time is not supported as it would increase complexity in the library massively and make certain operations much slower.</p>
+
+<h2>Also See</h2>
+
+<ul>
+<li><a href="https://shinmera.github.io/3d-matrices">3d-matrices</a> for Matrix operations in conjunction with this library.</li>
+</ul>
 </span>
         
       </article>
@@ -528,6 +534,19 @@ See NVROT.</pre>
                     <pre class="docstring">Same as /, but always returns a vector. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.</pre>
                   </article>
                 </li><li>
+                  <a name="3D-VECTORS:V/="/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#3D-VECTORS:V/=" class="name">V/=</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(VAL &amp;REST VALS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">This is the same as /=, but testing all vector fields simultaneously.</pre>
+                  </article>
+                </li><li>
                   <a name="3D-VECTORS:V1+"/>
                   <article>
                     <header class="function">
@@ -971,7 +990,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VW4" class="name">VW4</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(INSTANCE)</span>
+                        <span class="arguments">(VEC)</span>
                       </code>
                     </header>
                     <pre class="docstring">Returns the W component of a 4D vector.</pre>
@@ -3012,7 +3031,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VX2" class="name">VX2</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(INSTANCE)</span>
+                        <span class="arguments">(VEC)</span>
                       </code>
                     </header>
                     <pre class="docstring">Returns the X component of a 2D vector.</pre>
@@ -3025,7 +3044,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VX3" class="name">VX3</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(INSTANCE)</span>
+                        <span class="arguments">(VEC)</span>
                       </code>
                     </header>
                     <pre class="docstring">Returns the X component of a 3D vector.</pre>
@@ -3038,7 +3057,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VX4" class="name">VX4</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(INSTANCE)</span>
+                        <span class="arguments">(VEC)</span>
                       </code>
                     </header>
                     <pre class="docstring">Returns the X component of a 4D vector.</pre>
@@ -5079,7 +5098,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VY2" class="name">VY2</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(INSTANCE)</span>
+                        <span class="arguments">(VEC)</span>
                       </code>
                     </header>
                     <pre class="docstring">Returns the Y component of a 2D vector.</pre>
@@ -5092,7 +5111,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VY3" class="name">VY3</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(INSTANCE)</span>
+                        <span class="arguments">(VEC)</span>
                       </code>
                     </header>
                     <pre class="docstring">Returns the Y component of a 3D vector.</pre>
@@ -5105,7 +5124,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VY4" class="name">VY4</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(INSTANCE)</span>
+                        <span class="arguments">(VEC)</span>
                       </code>
                     </header>
                     <pre class="docstring">Returns the Y component of a 4D vector.</pre>
@@ -7146,7 +7165,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VZ3" class="name">VZ3</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(INSTANCE)</span>
+                        <span class="arguments">(VEC)</span>
                       </code>
                     </header>
                     <pre class="docstring">Returns the Z component of a 3D vector.</pre>
@@ -7159,7 +7178,7 @@ See VROT.</pre>
                       <code>
                         <h4><a href="#3D-VECTORS:VZ4" class="name">VZ4</a></h4>
                         <span class="qualifiers"></span>
-                        <span class="arguments">(INSTANCE)</span>
+                        <span class="arguments">(VEC)</span>
                       </code>
                     </header>
                     <pre class="docstring">Returns the Z component of a 4D vector.</pre>

@@ -36,3 +36,7 @@ One convenient way to switch around between the types and generally flip around 
 The `_` can be used anywhere within swizzle operators in order to pad the vector with a zero.
 
 If you require higher precision than `single-float`s ensure, you can add `:3d-vectors-double-floats` to `*features*` and recompile the library `(asdf:compile-system :3d-vectors :force T)`. Similarly, if you want to switch back to `single-float`s, you can remove the feature and recompile. Both at the same time is not supported as it would increase complexity in the library massively and make certain operations much slower.
+
+## Also See
+
+* [3d-matrices](https://shinmera.github.io/3d-matrices) for Matrix operations in conjunction with this library.
