@@ -121,12 +121,13 @@
 (define-vecreduce vmax max)
 
 (defmacro define-vector-constant (name x y &optional z w)
-  `(defconstant ,name (cond ((not (boundp ',name))
-                             (vec ,x ,y ,z ,w))
-                            ((v= (symbol-value ',name) (vec ,x ,y ,z ,w))
-                             (symbol-value ',name))
-                            (T (error "Attempting to redefine constant vector ~a with value ~a to ~a."
-                                      ',name (symbol-value ',name) (vec ,x ,y ,z ,w))))))
+  (let ((z (when z (list z))) (w (when w (list w))))
+    `(defconstant ,name (cond ((not (boundp ',name))
+                               (vec ,x ,y ,@z ,@w))
+                              ((v= (symbol-value ',name) (vec ,x ,y ,@z ,@w))
+                               (symbol-value ',name))
+                              (T (error "Attempting to redefine constant vector ~a with value ~a to ~a."
+                                        ',name (symbol-value ',name) (vec ,x ,y ,@z ,@w)))))))
 (define-vector-constant +vx2+ 1 0)
 (define-vector-constant +vy2+ 0 1)
 
