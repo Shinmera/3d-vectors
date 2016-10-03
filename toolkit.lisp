@@ -29,3 +29,12 @@
         (real (ensure-float val))
         (T `(load-time-value (ensure-float ,val))))
       `(locally (declare (optimize (speed 1))) (ensure-float ,val))))
+
+(defmacro defsetf* (name args values &body body)
+  #-(or ecl ccl)
+  `(defsetf ,name ,args ,values ,@body)
+  #+(or ecl ccl) ;; Compiler bug workarounds, hooray.
+  (if (eql (first args) '&environment)
+      `(defsetf ,name ,(cddr args) ,values
+         (let (,(second args)) ,@body))
+      `(defsetf ,name ,args ,values ,@body)))
