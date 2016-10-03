@@ -11,8 +11,13 @@
      (declaim (inline ,name))
      (declaim (ftype (function (vec) ,*float-type*) ,name))
      (defun ,name (vec) (,rel vec))
+     #-(or ecl ccl)
      (defsetf ,name (&environment env vec) (value)
-       `(setf (,',rel ,vec) ,(ensure-float-param value env)))))
+       `(setf (,',rel ,vec) ,(ensure-float-param value env)))
+     ;; I don't know why they don't like the &environment, it is allowed per spec.
+     #+(or ecl ccl)
+     (defsetf ,name (vec) (value)
+       `(setf (,',rel ,vec) ,(ensure-float-param value NIL)))))
 
 (defstruct (vec2 (:conc-name NIL)
                  (:constructor %vec2 (%vx2 %vy2))
@@ -113,6 +118,13 @@
          ,@(when a3 `((vec3 (,a3 vec))))
          ,@(when a4 `((vec4 (,a4 vec))))
          ,@(when a2 `((vec2 (,a2 vec))))))
+     #+(or ecl ccl)
+     (defsetf ,name (vec) (value)
+       `(etypecase ,vec
+          ,@(when ',a3 `((vec3 (setf (,',a3 ,vec) ,(ensure-float-param value NIL)))))
+          ,@(when ',a4 `((vec4 (setf (,',a4 ,vec) ,(ensure-float-param value NIL)))))
+          ,@(when ',a2 `((vec2 (setf (,',a2 ,vec) ,(ensure-float-param value NIL)))))))
+     #-(or ecl ccl)
      (defsetf ,name (&environment env vec) (value)
        `(etypecase ,vec
           ,@(when ',a3 `((vec3 (setf (,',a3 ,vec) ,(ensure-float-param value env)))))
@@ -136,7 +148,8 @@
     (vec4 (vec4 (vx4 vec) (vy4 vec) (vz4 vec) (vw4 vec)))))
 
 (declaim (inline vec))
-(declaim (ftype (function (real real &optional real real) vec) vec))
+#+ecl (declaim (ftype (function (real real &optional (or null real) (or null real)) vec) vec))
+#-ecl (declaim (ftype (function (real real &optional real real) vec) vec))
 (define-ofun vec (x y &optional z w)
   (cond (w (%vec4 (ensure-float x) (ensure-float y) (ensure-float z) (ensure-float w)))
         (z (%vec3 (ensure-float x) (ensure-float y) (ensure-float z)))
