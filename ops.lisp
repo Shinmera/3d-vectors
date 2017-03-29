@@ -402,7 +402,6 @@
     (%vecrot-internal
       (vec3 (arith vx3) (arith vy3) (arith vz3)))))
 
-(declaim (inline nvrot))
 (declaim (ftype (function (vec3 vec3 real) vec3) nvrot))
 (define-ofun nvrot (v axis phi)
   (let ((phi (ensure-float phi)))
@@ -412,15 +411,13 @@
             (vz3 v) (arith vz3))
       v)))
 
-(declaim (inline vrotv))
 (declaim (ftype (function (vec3 vec3) vec3) vrotv))
 (define-ofun vrotv (a b)
-  (vrot (vrot (vrot a
-                    +vx+ (vx3 b))
-              +vy+ (vy3 b))
-        +vz+ (vz3 b)))
+  (nvrot (nvrot (vrot a
+                      +vx+ (vx3 b))
+                +vy+ (vy3 b))
+         +vz+ (vz3 b)))
 
-(declaim (inline nvrotv))
 (declaim (ftype (function (vec3 vec3) vec3) nvrotv))
 (define-ofun nvrotv (a b)
   (nvrot (nvrot (nvrot a
