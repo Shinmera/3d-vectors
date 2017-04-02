@@ -79,12 +79,14 @@
    #:vcopy2
    #:vx2
    #:vy2
+   #:vec2-random
    #:vec3
    #:vec3-p
    #:vcopy3
    #:vx3
    #:vy3
    #:vz3
+   #:vec3-random
    #:vec4
    #:vec4-p
    #:vcopy4
@@ -92,6 +94,7 @@
    #:vy4
    #:vz4
    #:vw4
+   #:vec4-random
    #:vec
    #:vec-p
    #:vcopy

@@ -113,6 +113,7 @@ Each X/Y/Z argument can be one of 'X,'Y,'Z,'VX,'VY,'VZ,:X,:Y,:Z indicating the r
   (vcopy2 "Creates a copy of a 2D vector.")
   (vec2-p "Returns T if the argument is of type vec2.")
   (vec2 "Constructs a 2D vector.")
+  (vec2-random "Constructs a 2D vector with random values according to the given bounds.")
 
   (type vec3
     "A three-dimensional vector with X, Y, and Z fields.")
@@ -124,6 +125,7 @@ Each X/Y/Z argument can be one of 'X,'Y,'Z,'VX,'VY,'VZ,:X,:Y,:Z indicating the r
   (vcopy3 "Creates a copy of a 3D vector.")
   (vec3-p "Returns T if the argument is of type vec3.")
   (vec3 "Constructs a 3D vector.")
+  (vec3-random "Constructs a 3D vector with random values according to the given bounds.")
 
   (type vec4
     "A four-dimensional vector with X, Y, Z, and W fields.")
@@ -136,6 +138,7 @@ Each X/Y/Z argument can be one of 'X,'Y,'Z,'VX,'VY,'VZ,:X,:Y,:Z indicating the r
   (vcopy4 "Creates a copy of a 4D vector.")
   (vec4-p "Returns T if the argument is of type vec4.")
   (vec4 "Constructs a 3D vector.")
+  (vec4-random "Constructs a 4D vector with random values according to the given bounds.")
 
   (type vec
     "Either a vec2, vec3, or vec4.")

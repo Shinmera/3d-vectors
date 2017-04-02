@@ -29,16 +29,21 @@
 (define-ofun vec2 (x y)
   (%vec2 (ensure-float x) (ensure-float y)))
 
+(define-compiler-macro vec2 (&whole whole &environment env x y)
+  `(%vec2 ,(ensure-float-param x env)
+          ,(ensure-float-param y env)))
+
+(define-ofun vec2-random (lower upper)
+  (let ((range (- upper lower)))
+    (vec2 (+ (random range) lower)
+          (+ (random range) lower))))
+
 (defmethod print-object ((v vec2) stream)
   (write (make-load-form v) :stream stream))
 
 (defmethod make-load-form ((v vec2) &optional env)
   (declare (ignore env))
   `(vec2 ,(vx2 v) ,(vy2 v)))
-
-(define-compiler-macro vec2 (&whole whole &environment env x y)
-  `(%vec2 ,(ensure-float-param x env)
-          ,(ensure-float-param y env)))
 
 (defstruct (vec3 (:conc-name NIL)
                  (:constructor %vec3 (%vx3 %vy3 %vz3))
@@ -61,6 +66,12 @@
   `(%vec3 ,(ensure-float-param x env)
           ,(ensure-float-param y env)
           ,(ensure-float-param z env)))
+
+(define-ofun vec3-random (lower upper)
+  (let ((range (- upper lower)))
+    (vec3 (+ (random range) lower)
+          (+ (random range) lower)
+          (+ (random range) lower))))
 
 (defmethod print-object ((v vec3) stream)
   (write (make-load-form v) :stream stream))
@@ -93,6 +104,13 @@
           ,(ensure-float-param y env)
           ,(ensure-float-param z env)
           ,(ensure-float-param w env)))
+
+(define-ofun vec4-random (lower upper)
+  (let ((range (- upper lower)))
+    (vec4 (+ (random range) lower)
+          (+ (random range) lower)
+          (+ (random range) lower)
+          (+ (random range) lower))))
 
 (defmethod print-object ((v vec4) stream)
   (write (make-load-form v) :stream stream))
