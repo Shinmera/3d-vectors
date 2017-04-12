@@ -55,22 +55,23 @@
 (defmacro %2vec-op (a b combination v2red &optional (v3red v2red) (v4red v2red))
   (let ((v2red (if (listp v2red) v2red (list v2red)))
         (v3red (if (listp v3red) v3red (list v3red)))
-        (v4red (if (listp v4red) v4red (list v4red))))
+        (v4red (if (listp v4red) v4red (list v4red)))
+        (ag (gensym "A")) (bg (gensym "B")))
     `(etypecase ,a
-       (real (let ((,a (ensure-float ,a)))
+       (real (let ((,ag (ensure-float ,a)))
                (etypecase ,b
-                 (vec4 (,@v4red (,combination ,a (vx4 b)) (,combination a (vy4 b)) (,combination a (vz4 b)) (,combination a (vw4 b))))
-                 (vec3 (,@v3red (,combination ,a (vx3 b)) (,combination a (vy3 b)) (,combination a (vz3 b))))
-                 (vec2 (,@v2red (,combination ,a (vx2 b)) (,combination a (vy2 b)))))))
-       (vec4 (etypecase b
-               (real (let ((b (ensure-float b))) (,@v4red (,combination (vx4 a) b) (,combination (vy4 a) b) (,combination (vz4 a) b) (,combination (vw4 a) b))))
-               (vec4 (,@v4red (,combination (vx4 a) (vx4 b)) (,combination (vy4 a) (vy4 b)) (,combination (vz4 a) (vz4 b)) (,combination (vw4 a) (vw4 b))))))
-       (vec3 (etypecase b
-               (real (let ((b (ensure-float b))) (,@v3red (,combination (vx3 a) b) (,combination (vy3 a) b) (,combination (vz3 a) b))))
-               (vec3 (,@v3red (,combination (vx3 a) (vx3 b)) (,combination (vy3 a) (vy3 b)) (,combination (vz3 a) (vz3 b))))))
-       (vec2 (etypecase b
-               (real (let ((b (ensure-float b))) (,@v2red (,combination (vx2 a) b) (,combination (vy2 a) b))))
-               (vec2 (,@v2red (,combination (vx2 a) (vx2 b)) (,combination (vy2 a) (vy2 b)))))))))
+                 (vec4 (,@v4red (,combination ,ag (vx4 ,b)) (,combination ,ag (vy4 ,b)) (,combination ,ag (vz4 ,b)) (,combination ,ag (vw4 ,b))))
+                 (vec3 (,@v3red (,combination ,ag (vx3 ,b)) (,combination ,ag (vy3 ,b)) (,combination ,ag (vz3 ,b))))
+                 (vec2 (,@v2red (,combination ,ag (vx2 ,b)) (,combination ,ag (vy2 ,b)))))))
+       (vec4 (etypecase ,b
+               (real (let ((,bg (ensure-float ,b))) (,@v4red (,combination (vx4 ,a) ,bg) (,combination (vy4 ,a) ,bg) (,combination (vz4 ,a) ,bg) (,combination (vw4 ,a) ,bg))))
+               (vec4 (,@v4red (,combination (vx4 ,a) (vx4 ,b)) (,combination (vy4 ,a) (vy4 ,b)) (,combination (vz4 ,a) (vz4 ,b)) (,combination (vw4 ,a) (vw4 ,b))))))
+       (vec3 (etypecase ,b
+               (real (let ((,bg (ensure-float ,b))) (,@v3red (,combination (vx3 ,a) ,bg) (,combination (vy3 ,a) ,bg) (,combination (vz3 ,a) ,bg))))
+               (vec3 (,@v3red (,combination (vx3 ,a) (vx3 ,b)) (,combination (vy3 ,a) (vy3 ,b)) (,combination (vz3 ,a) (vz3 ,b))))))
+       (vec2 (etypecase ,b
+               (real (let ((,bg (ensure-float ,b))) (,@v2red (,combination (vx2 ,a) ,bg) (,combination (vy2 ,a) ,bg))))
+               (vec2 (,@v2red (,combination (vx2 ,a) (vx2 ,b)) (,combination (vy2 ,a) (vy2 ,b)))))))))
 
 (defmacro define-veccomp (name op &optional (bundle 'and))
   (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
