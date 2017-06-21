@@ -114,9 +114,9 @@
                finally (return res)))
        (define-compiler-macro ,name (val &rest vals)
          (case (length vals)
-           (0 (vcopy val))
-           (1 `(,',2vec-name val ,(first vals)))
-           (T `(,',2vec-name val (,',name ,@(rest vals)))))))))
+           (0 `(vcopy ,val))
+           (1 `(,',2vec-name ,val ,(first vals)))
+           (T `(,',2vec-name ,val (,',name ,@(rest vals)))))))))
 
 (define-vecreduce vmin min)
 (define-vecreduce vmax max)
