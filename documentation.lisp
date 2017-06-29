@@ -38,6 +38,10 @@ If the vector does not have a particular field, the variable is initialized to 0
   (variable +vz+ "Constant vector for the 3D unit in Z direction.")
   
   (vlength "Returns the euclidean norm of the vector.")
+  (v2norm "Returns the euclidean/2-norm of the vector.")
+  (v1norm "Returns the taxicab/1-norm of the vector.")
+  (vinorm "Returns the maximum-norm of the vector.")
+  (vpnorm "Returns the p-norm of the vector.")
 
   (vsetf "Similar to SETF, but requires as many values as the given vector has fields. Returns the modified vector.")
 
@@ -69,8 +73,8 @@ This operation does not work with 2D or 4D vectors.")
   (vmod "Returns a vector with each component being the modulus of the given vector's against the divisor.")
   (nvmod "Performs MOD on each component of the vector and stores back the results.")
 
-  (vunit "Returns the unit vector form of the given vector.")
-  (nvunit "Normalizes the vector into its unit form.")
+  (vunit "Returns the unit vector form of the given vector by the 2-norm.")
+  (nvunit "Normalizes the vector into its unit form by the 2-norm.")
 
   (vscale "Returns a scaled vector of the specified length.")
   (nvscale "Scales the vector to be of the specified length.")

@@ -35,6 +35,10 @@
    #:+vy+
    #:+vz+
    #:vlength
+   #:v2norm
+   #:v1norm
+   #:vinorm
+   #:vpnorm
    #:vsetf
    #:vapply
    #:vapplyf
