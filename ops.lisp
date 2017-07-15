@@ -235,13 +235,13 @@
                             (%vy2 ,v) ,(ensure-float-param y env))))
           ,v))
 
-(defmacro vsetf (vec x y &optional (z 0) (w 0))
+(defmacro vsetf (vec x y &optional z w)
   (let ((v (gensym "VEC")))
     `(let ((,v ,vec))
        (etypecase ,v
          (vec2 (%vsetf ,v ,x ,y))
-         (vec3 (%vsetf ,v ,x ,y ,z))
-         (vec4 (%vsetf ,v ,x ,y ,z ,w)))
+         (vec3 (%vsetf ,v ,x ,y ,(or z `(vz3 ,vec))))
+         (vec4 (%vsetf ,v ,x ,y ,(or z `(vz4 ,vec)) ,(or w `(vw4 ,vec)))))
        ,v)))
 
 (defmacro vapply (&environment env vec op &optional x y z w)
