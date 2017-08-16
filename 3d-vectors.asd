@@ -4,7 +4,7 @@
  Author: Nicolas Hafner <shinmera@tymoon.eu>
 |#
 
-(in-package #:cl-user)
+
 (asdf:defsystem 3d-vectors
   :version "3.0.0"
   :license "Artistic"
