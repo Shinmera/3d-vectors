@@ -18,6 +18,9 @@
        (v= (vxyz a) (vxyz b))
        (v= (vxyzw a) (vxyzw b))))
 
+(defun deg (rad)
+  (* rad (/ 180 PI)))
+
 (defmacro isv-type-eq-error (op)
   `(progn (fail (,op (vec 1 2) (vec 1 2 3)))
           (fail (,op (vec 1 2) (vec 1 2 3 4)))
@@ -165,6 +168,10 @@
   (is = (sqrt (+ 1 4 9 16)) (vlength (vec 1 2 3 4)))
   (is = (+ (* 1 4) (* 2 3) (* 3 2) (* 4 1)) (v. (vec 1 2 3 4) (vec 4 3 2 1)))
   (is v= (vec -4 8 -4) (vc (vec 1 2 3) (vec 3 2 1)))
+  (is ~= 90 (deg (vangle +vx+ +vy+)))
+  (is ~= 0 (deg (vangle +vx+ +vx+)))
+  (is ~= 90 (deg (vangle (vec 1 0) (vec 0 1))))
+  (is ~= 45 (deg (vangle (vec 1 0) (vec 1 1))))
   (is v= (vec 3.0301156 2.0 0.90465444) (vrot (vec 1 2 3) (vec 0 1 0) (sin 360)))
   (is ~= (vlength (vunit (vec 1 2 3 4))) 1)
   (is ~= (vlength (vscale (vec 1 2 3 4) 2)) 2)

@@ -56,6 +56,7 @@
    #:vdecf
    #:v.
    #:vc
+   #:vangle
    #:vabs
    #:nvabs
    #:vmod

@@ -66,6 +66,7 @@ If the vector does not have a particular field, the variable is initialized to 0
   (v. "Returns the dot product of the two vectors.")
   (vc "Returns the cross product of the two 3D vectors.
 This operation does not work with 2D or 4D vectors.")
+  (vangle "Returns the angle between two vectors.")
 
   (vabs "Returns a vector with each component being the absolute value of the given vector's.")
   (nvabs "Performs ABS on each component of the vector and stores back the results.")

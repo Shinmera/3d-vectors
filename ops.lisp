@@ -355,6 +355,13 @@
         (- (* (vx3 a) (vy3 b))
            (* (vy3 a) (vx3 b)))))
 
+(declaim (ftype (function (vec vec) #.*float-type*) vangle))
+(define-ofun vangle (a b)
+  (acos
+   (/ (v. a b)
+      (v2norm a)
+      (v2norm b))))
+
 (declaim (inline vabs))
 (declaim (ftype (function (vec) vec) vabs))
 (define-ofun vabs (vec)
