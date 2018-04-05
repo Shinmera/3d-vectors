@@ -33,7 +33,7 @@ One convenient way to switch around between the types and generally flip around 
     (vxy_ (vec 1 2))     ; => (vec3 1 2 0)
     (vwwx (vec 1 2 3 4)) ; => (vec3 4 4 1)
 
-The `_` can be used anywhere within swizzle operators in order to pad the vector with a zero.
+The `_` can be used anywhere within swizzle operators in order to pad the vector with a zero. You can also use the swizzle operators as accessors to set multiple fields of a vector at once.
 
 If you require higher precision than `single-float`s ensure, you can add `:3d-vectors-double-floats` to `*features*` and recompile the library `(asdf:compile-system :3d-vectors :force T)`. Similarly, if you want to switch back to `single-float`s, you can remove the feature and recompile. Both at the same time is not supported as it would increase complexity in the library massively and make certain operations much slower.
 

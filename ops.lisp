@@ -608,13 +608,17 @@
            (if (eql dim '_)
                (ensure-float 0)
                (list (intern (format NIL "~a~a~a" 'v dim (subseq (string type) 3))) 'vec))))
-    (let ((name (intern (format NIL "~a~{~a~}" 'v comps))))
+    (let ((name (intern (format NIL "~a~{~a~}" 'v comps)))
+          (other-type (case (length comps) (2 'vec2) (3 'vec3) (4 'vec4))))
       `(progn
+         (export ',name) ;; Haha no way, I'm not writing all these into the package listing.
          (declaim (inline ,name))
          (declaim (ftype (function (vec) vec) ,name))
-         (export ',name) ;; Haha no way, I'm not writing all these into the package listing.
-         (defun ,name (vec)
-           ,(format NIL "Swizzles the vector into a ~aD one, filling its fields with the ~{~#[~;~a~;~a and ~a~:;~@{~a~#[~;, and ~:;, ~]~}~]~} components of the given vector respectively."
+         (define-ofun ,name (vec)
+           ,(format NIL "Swizzles the vector into a ~aD one, filling its fields with the ~{~#[~;~a~;~a and ~a~:;~@{~a~#[~;, and ~:;, ~]~}~]~} components of the given vector respectively.
+~:*
+When used as a writer sets the fields of the vector, replacing the ~{~#[~;~a~;~a and ~a~:;~@{~a~#[~;, and ~:;, ~]~}~]~} components with the XYZW of the value respectively in that order.
+Note that, unlike usual SETF functions that return the value you set to, this returns the modified vector."
                     (length comps) comps)
            (etypecase vec
              ,@(loop for d in (or (append (when (subsetp comps '(_ x y)) '(vec2))
@@ -624,7 +628,29 @@
                      collect `(,d ,(ecase (length comps)
                                      (2 `(vec2 ,@(loop for comp in comps collect (%vec-accessor comp d))))
                                      (3 `(vec3 ,@(loop for comp in comps collect (%vec-accessor comp d))))
-                                     (4 `(vec4 ,@(loop for comp in comps collect (%vec-accessor comp d)))))))))))))
+                                     (4 `(vec4 ,@(loop for comp in comps collect (%vec-accessor comp d)))))))))
+         
+         (declaim (inline (setf ,name)))
+         (declaim (ftype (function ((or ,other-type number) vec) vec) (setf ,name)))
+         (define-ofun (setf ,name) (val vec)
+           ,(if (loop for c in comps always (eq c '_))
+                `(declare (ignore val))
+                `(etypecase vec
+                   ,@(loop for d in (or (append (when (subsetp comps '(_ x y)) '(vec2))
+                                                (when (subsetp comps '(_ x y z)) '(vec3))
+                                                (when (subsetp comps '(_ x y z w)) '(vec4)))
+                                        (error "Unknown comps: ~a" comps))
+                           collect `(,d (etypecase val
+                                          (number
+                                           (let ((val (ensure-float val)))
+                                             ,@(loop for comp in comps for i in '(x y z w)
+                                                     unless (eql comp '_)
+                                                     collect `(setf ,(%vec-accessor comp d) val))))
+                                          (,other-type
+                                           ,@(loop for comp in comps for i in '(x y z w)
+                                                   unless (eql comp '_)
+                                                   collect `(setf ,(%vec-accessor comp d) (,(first (%vec-accessor i other-type)) val)))))))))
+           vec)))))
 
 (defmacro define-all-swizzlers (size)
   (labels ((permute (&rest lists)

@@ -115,7 +115,9 @@
   (is v= (vec 3 0 0 0) (vorder (vec 1 2 3 4) :z))
   (is v= (vec 1 1)     (vxx (vec 1 2 3 4)))
   (is v= (vec 1 2 3)   (vxyz (vec 1 2 3 4)))
-  (is v= (vec 2 2 2 0) (vyyy_ (vec 1 2 3 4))))
+  (is v= (vec 2 2 2 0) (vyyy_ (vec 1 2 3 4)))
+  (is v= (vec 0 1 0) (setf (vx_z (vec 1 1 1)) (vec 0 0 0)))
+  (is v= (vec 1 0 0 2) (setf (vxw (vec 0 0 0 0)) (vec 1 2))))
 
 (define-test constants
   :parent 3d-vectors
