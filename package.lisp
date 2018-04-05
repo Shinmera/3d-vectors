@@ -70,6 +70,7 @@
    #:nvclamp
    #:vlimit
    #:nvlimit
+   #:vlerp
    #:vrot
    #:nvrot
    #:vrotv
