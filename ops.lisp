@@ -459,6 +459,30 @@
                           (min uz (max lz (vz4 vec)))
                           (min uw (max lw (vw4 vec)))))))))
 
+(declaim (inline lerp))
+(defun lerp (from to n)
+  (+ from (* n (- to from))))
+
+(declaim (inline vlerp))
+(declaim (ftype (function (vec vec (or vec real)) vec) vlerp))
+(define-ofun vlerp (from to n)
+  (etypecase from
+    (vec2 (with-vec2 (tx ty) to
+            (with-vec2 (nx ny) n
+              (vec2 (lerp (vx2 from) tx nx)
+                    (lerp (vy2 from) ty ny)))))
+    (vec3 (with-vec3 (tx ty tz) to
+            (with-vec3 (nx ny nz) n
+              (vec3 (lerp (vx3 from) tx nx)
+                    (lerp (vy3 from) ty ny)
+                    (lerp (vz3 from) tz nz)))))
+    (vec4 (with-vec4 (tx ty tz tw) to
+            (with-vec4 (nx ny nz nw) n
+              (vec4 (lerp (vx4 from) tx nx)
+                    (lerp (vy4 from) ty ny)
+                    (lerp (vz4 from) tz nz)
+                    (lerp (vw4 from) tw nw)))))))
+
 (declaim (inline vlimit))
 (declaim (ftype (function (vec (or vec real)) vec) vlimit))
 (define-ofun vlimit (vec limit)
@@ -468,6 +492,8 @@
 (declaim (ftype (function (vec (or vec real)) vec) nvlimit))
 (define-ofun nvlimit (vec limit)
   (nvclamp (- limit) vec limit))
+
+
 
 (defmacro %vecrot-internal (&body body)
   ;; https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula

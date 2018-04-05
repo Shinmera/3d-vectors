@@ -87,6 +87,8 @@ This operation does not work with 2D or 4D vectors.")
   (vlimit "Returns a limited vector where each field is within [-LIMIT, LIMIT]. Accepts REALs or VEcs as arguments, where REALs are used for each component of the vector.")
   (nvlimit "Limits the vector such that each field is within [-LIMIT, LIMIT]. Accepts a REAL or VEc for the limit, where a REAL is used for each component of the vector.")
 
+  (vlerp "Returns a vector where each field is linearly interpolated from the corresponding field in FROM to TO by N. Accepts a REAL or VEC for N, where REALs are used for each component of the vector.")
+
   (vrot "Returns a 3D vector rotated around AXIS by PHI rads. The axis has to be a unit vector.
 This operation does not work with 2D or 4D vectors.")
   (nvrot "Rotates the 3D vector around AXIS by PHI rads. The axis has to be a unit vector.
