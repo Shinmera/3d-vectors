@@ -146,6 +146,23 @@
 (define-vector-constant +vy+ 0 1 0)
 (define-vector-constant +vz+ 0 0 1)
 
+(declaim (inline vdistance))
+(declaim (ftype (function (vec vec) #.*float-type*) vdistance))
+(define-ofun vdistance (a b)
+  (etypecase a
+    (vec2 (etypecase b
+            (vec2 (sqrt (+ (expt (- (vx2 a) (vx2 b)) 2)
+                           (expt (- (vy2 a) (vy2 b)) 2))))))
+    (vec3 (etypecase b
+            (vec3 (sqrt (+ (expt (- (vx3 a) (vx3 b)) 2)
+                           (expt (- (vy3 a) (vy3 b)) 2)
+                           (expt (- (vz3 a) (vz3 b)) 2))))))
+    (vec4 (etypecase b
+            (vec4 (sqrt (+ (expt (- (vx4 a) (vx4 b)) 2)
+                           (expt (- (vy4 a) (vy4 b)) 2)
+                           (expt (- (vz4 a) (vz4 b)) 2)
+                           (expt (- (vw4 a) (vw4 b)) 2))))))))
+
 (declaim (inline vlength))
 (declaim (ftype (function (vec) #.*float-type*) vlength))
 (define-ofun vlength (v)

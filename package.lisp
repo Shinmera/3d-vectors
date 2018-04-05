@@ -34,6 +34,7 @@
    #:+vx+
    #:+vy+
    #:+vz+
+   #:vdistance
    #:vlength
    #:v2norm
    #:v1norm
