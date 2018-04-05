@@ -493,8 +493,6 @@
 (define-ofun nvlimit (vec limit)
   (nvclamp (- limit) vec limit))
 
-
-
 (defmacro %vecrot-internal (&body body)
   ;; https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
   ;; vr = v*cos(phi) + (kxv)*sin(phi) + k*(k*v)*(1-cos(phi)
