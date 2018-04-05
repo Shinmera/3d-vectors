@@ -160,8 +160,8 @@
                    (expt (vz4 v) 2)
                    (expt (vw4 v) 2))))))
 
-(declaim (inline vlength))
-(declaim (ftype (function (vec) #.*float-type*) vlength))
+(declaim (inline v2norm))
+(declaim (ftype (function (vec) #.*float-type*) v2norm))
 (define-ofun v2norm (v)
   (etypecase v
     (vec2 (sqrt (+ (expt (vx2 v) 2)
@@ -188,7 +188,7 @@
              (abs (vz4 v))
              (abs (vw4 v))))))
 
-(declaim (inline v1norm))
+(declaim (inline vinorm))
 (declaim (ftype (function (vec) #.*float-type*) vinorm))
 (define-ofun vinorm (v)
   (etypecase v
