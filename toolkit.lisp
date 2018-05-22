@@ -47,5 +47,7 @@
                    do (when (eql arg '&environment)
                         (return (pop args))))))
     `(defsetf ,name ,args ,values
-       (let (,env)
-         ,@body))))
+       ,@(if env
+             `((let (,env)
+                 ,@body))
+             body))))
