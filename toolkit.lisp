@@ -12,10 +12,8 @@
     #+3d-vectors-double-floats 'double-float
     #-3d-vectors-double-floats 'single-float))
 
-(defmacro define-ofun (name args &body body)
-  `(defun ,name ,args
-     (declare (optimize (compilation-speed 0) (debug 1) (safety 1) speed))
-     ,@body))
+(deftype float-type ()
+  '#.*float-type*)
 
 (declaim (inline ensure-float))
 (declaim (ftype (function (real) #.*float-type*)))
@@ -30,10 +28,17 @@
         (T `(load-time-value (ensure-float ,val))))
       `(locally (declare (optimize (speed 1))) (ensure-float ,val))))
 
+(defmacro define-ofun (name args &body body)
+  `(progn
+     #+sbcl (declaim (sb-ext:maybe-inline ,name))
+     (defun ,name ,args
+       (declare (optimize (compilation-speed 0) (debug 1) (safety 1) speed))
+       ,@body)))
+
 (defmacro defsetf* (name args values &body body)
-  #-(or ecl ccl)
+  #-(or ecl ccl abcl clisp)
   `(defsetf ,name ,args ,values ,@body)
-  #+(or ecl ccl) ;; Compiler bug workarounds, hooray.
+  #+(or ecl ccl abcl clisp) ;; Compiler bug workarounds, hooray.
   (if (eql (first args) '&environment)
       `(defsetf ,name ,(cddr args) ,values
          (let (,(second args)) ,@body))
