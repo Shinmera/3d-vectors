@@ -39,7 +39,7 @@
   #-(or ccl abcl)
   `(defsetf ,name ,args ,values ,@body)
   #+(or ccl abcl) ;; Compiler bug workarounds, hooray.
-  (if (eql (first args) '&environment)
-      `(defsetf ,name ,(cddr args) ,values
-         (let (,(second args)) ,@body))
-      `(defsetf ,name ,args ,values ,@body)))
+  (let ((args (loop for arg in args
+                    until (eql arg '&environment)
+                    collect arg)))
+    `(defsetf ,name ,args ,values ,@body)))
