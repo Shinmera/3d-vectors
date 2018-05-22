@@ -14,4 +14,4 @@
   :serial T
   :components ((:file "test"))
   :depends-on (:3d-vectors :parachute)
-  :perform (asdf:test-op (op c) (uiop:symbol-call :parachute :test :3d-vectors-test)))
+  :perform (asdf:test-op (op c) (uiop:symbol-call :3d-vectors-test :run)))
