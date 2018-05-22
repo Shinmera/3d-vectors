@@ -23,4 +23,4 @@ cache:
     - $HOME/.config/common-lisp
 
 script:
-  - ros -e "(asdf:test-system :3d-vectors-test)" -q
+  - ros -s 3d-vectors-test -e "(parachute:test-toplevel :3d-vectors-test)"

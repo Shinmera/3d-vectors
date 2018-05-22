@@ -7,13 +7,8 @@
 (in-package #:cl-user)
 (defpackage #:3d-vectors-test
   (:nicknames #:org.shirakumo.flare.vector.test)
-  (:use #:cl #:parachute #:3d-vectors)
-  (:export #:run))
+  (:use #:cl #:parachute #:3d-vectors))
 (in-package #:org.shirakumo.flare.vector.test)
-
-(defun run ()
-  (when (find :failed (results (test :3d-vectors-test)) :key #'status)
-    (error "Tests failed.")))
 
 (defun ~= (a b)
   (<= (abs (- a b)) 0.0001))
