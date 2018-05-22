@@ -41,5 +41,11 @@
   #+(or ccl abcl) ;; Compiler bug workarounds, hooray.
   (let ((args (loop for arg in args
                     until (eql arg '&environment)
-                    collect arg)))
-    `(defsetf ,name ,args ,values ,@body)))
+                    collect arg))
+        (env (loop for arg = (pop args)
+                   while arg
+                   do (when (eql arg '&environment)
+                        (return (pop args))))))
+    `(defsetf ,name ,args ,values
+       (let (,env)
+         ,@body))))
