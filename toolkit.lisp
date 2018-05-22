@@ -36,9 +36,9 @@
        ,@body)))
 
 (defmacro defsetf* (name args values &body body)
-  #-(or ccl abcl)
+  #-(or ccl abcl ecl)
   `(defsetf ,name ,args ,values ,@body)
-  #+(or ccl abcl) ;; Compiler bug workarounds, hooray.
+  #+(or ccl abcl ecl) ;; Compiler bug workarounds, hooray.
   (let ((args (loop for arg in args
                     until (eql arg '&environment)
                     collect arg))
