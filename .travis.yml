@@ -17,10 +17,5 @@ install:
   - ros install shinmera/parachute
   - ros install shinmera/3d-vectors
 
-cache:
-  directories:
-    - $HOME/.roswell
-    - $HOME/.config/common-lisp
-
 script:
   - ros -s 3d-vectors-test -e "(parachute:test-toplevel :3d-vectors-test)"
