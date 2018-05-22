@@ -11,7 +11,7 @@
      (declaim (inline ,name))
      (declaim (ftype (function (vec) ,*float-type*) ,name))
      (defun ,name (vec) (,rel vec))
-     (defsetf* ,name (&environment env vec) (value)
+     (defsetf* ,name (vec &environment env) (value)
        `(setf (,',rel ,vec) ,(ensure-float-param value env)))))
 
 (defstruct (vec2 (:conc-name NIL)
@@ -131,7 +131,7 @@
          ,@(when a3 `((vec3 (,a3 vec))))
          ,@(when a4 `((vec4 (,a4 vec))))
          ,@(when a2 `((vec2 (,a2 vec))))))
-     (defsetf* ,name (&environment env vec) (value)
+     (defsetf* ,name (vec &environment env) (value)
        `(etypecase ,vec
           ,@(when ',a3 `((vec3 (setf (,',a3 ,vec) ,(ensure-float-param value env)))))
           ,@(when ',a4 `((vec4 (setf (,',a4 ,vec) ,(ensure-float-param value env)))))

@@ -36,9 +36,9 @@
        ,@body)))
 
 (defmacro defsetf* (name args values &body body)
-  #-(or ecl ccl abcl clisp)
+  #-(or ccl abcl)
   `(defsetf ,name ,args ,values ,@body)
-  #+(or ecl ccl abcl clisp) ;; Compiler bug workarounds, hooray.
+  #+(or ccl abcl) ;; Compiler bug workarounds, hooray.
   (if (eql (first args) '&environment)
       `(defsetf ,name ,(cddr args) ,values
          (let (,(second args)) ,@body))
