@@ -74,7 +74,7 @@
                (vec2 (,@v2red (,combination (vx2 ,a) (vx2 ,b)) (,combination (vy2 ,a) (vy2 ,b)))))))))
 
 (defmacro define-veccomp (name op &optional (bundle 'and))
-  (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
+  (let ((2vec-name (intern* '2vec "-" name)))
     `(progn
        (declaim (ftype (function ((or vec real) (or vec real)) boolean) ,2vec-name))
        (declaim (ftype (function ((or vec real) &rest (or vec real)) boolean) ,name))
@@ -101,7 +101,7 @@
 (define-veccomp v>= >=)
 
 (defmacro define-vecreduce (name op)
-  (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
+  (let ((2vec-name (intern* '2vec "-" name)))
     `(progn
        (declaim (ftype (function ((or vec real) (or vec real)) vec) ,2vec-name))
        (declaim (ftype (function ((or vec real) &rest (or vec real)) vec) ,name))
@@ -285,7 +285,7 @@
        ,v)))
 
 (defmacro define-vecop (name nname op)
-  (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
+  (let ((2vec-name (intern* '2vec "-" name)))
     `(progn
        (declaim (inline ,name ,2vec-name))
        (declaim (ftype (function ((or vec real) &rest (or vec real)) vec) ,name))
@@ -304,7 +304,7 @@
            (T `(,',nname (,',2vec-name ,val ,(first vals)) ,@(rest vals))))))))
 
 (defmacro define-nvecop (name op)
-  (let ((2vec-name (intern (format NIL "~a-~a" '2vec name))))
+  (let ((2vec-name (intern* '2vec "-" name)))
     `(progn
        (declaim (inline ,name ,2vec-name))
        (declaim (ftype (function (vec &rest (or vec real)) vec) ,name))
@@ -607,8 +607,8 @@
   (flet ((%vec-accessor (dim type)
            (if (eql dim '_)
                (ensure-float 0)
-               (list (intern (format NIL "~a~a~a" 'v dim (subseq (string type) 3))) 'vec))))
-    (let ((name (intern (format NIL "~a~{~a~}" 'v comps)))
+               (list (intern* 'v dim (subseq (string type) 3)) 'vec))))
+    (let ((name (apply #'intern* 'v comps))
           (other-type (case (length comps) (2 'vec2) (3 'vec3) (4 'vec4))))
       `(progn
          (export ',name) ;; Haha no way, I'm not writing all these into the package listing.

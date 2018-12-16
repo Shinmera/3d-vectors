@@ -51,3 +51,8 @@
              `((let (,env)
                  ,@body))
              body))))
+
+(defun intern* (&rest parts)
+  (let ((*print-case* (readtable-case *readtable*))
+        (*package* #.*package*))
+    (intern (format NIL "~{~a~}" parts) #.*package*)))
