@@ -165,3 +165,9 @@
   (cond (w `(%vec4 ,(ensure-float-param x env) ,(ensure-float-param y env) ,(ensure-float-param z env) ,(ensure-float-param w env)))
         (z `(%vec3 ,(ensure-float-param x env) ,(ensure-float-param y env) ,(ensure-float-param z env)))
         (T `(%vec2 ,(ensure-float-param x env) ,(ensure-float-param y env)))))
+
+(defun vec-from-vector (vector)
+  (ecase (length vector)
+    (2 (vec2 (aref vector 0) (aref vector 1)))
+    (3 (vec3 (aref vector 0) (aref vector 1) (aref vector 2)))
+    (4 (vec4 (aref vector 0) (aref vector 1) (aref vector 2) (aref vector 3)))))

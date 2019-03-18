@@ -109,4 +109,5 @@
    #:vy
    #:vz
    #:vw
-   #:vec))
+   #:vec
+   #:vec-from-vector))

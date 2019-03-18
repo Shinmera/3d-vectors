@@ -159,4 +159,6 @@ Each X/Y/Z argument can be one of 'X,'Y,'Z,'VX,'VY,'VZ,:X,:Y,:Z indicating the r
   (vcopy "Creates a copy of the vector.")
   (vec-p "Returns T if the argument is a vector.")
 
-  (vec "Creates a new vector of the appropriate size."))
+  (vec "Creates a new vector of the appropriate size.")
+
+  (vec-from-vector "Create a vector from a lisp array vector. The array must be 2-4 elements long."))
