@@ -7,7 +7,7 @@
 
 (asdf:defsystem 3d-vectors
   :version "3.1.0"
-  :license "Artistic"
+  :license "zlib"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "A utility library implementing 2D, 3D, and 4D vector functionality."

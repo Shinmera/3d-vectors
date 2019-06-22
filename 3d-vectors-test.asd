@@ -6,7 +6,7 @@
 
 (asdf:defsystem 3d-vectors-test
   :version "3.0.0"
-  :license "Artistic"
+  :license "zlib"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "Tests for the 3d-vectors system."
