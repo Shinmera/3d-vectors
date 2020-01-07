@@ -461,7 +461,7 @@
 
 (declaim (inline lerp))
 (defun lerp (from to n)
-  (+ from (* n (- to from))))
+  (+ (* from (- 1 n)) (* to n)))
 
 (declaim (inline vlerp))
 (declaim (ftype (function (vec vec (or vec real)) vec) vlerp))
