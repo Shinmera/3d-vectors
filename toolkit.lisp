@@ -28,6 +28,18 @@
       (loop for comb in (first combinations)
             collect (list comb))))
 
+(defun prefix-tree (combinations)
+  (let ((table (make-hash-table :test 'eql)))
+    (loop for (car . cdr) in combinations
+          do (if (consp cdr)
+                 (push cdr (gethash car table))
+                 (setf (gethash car table) cdr)))
+    (loop for key being the hash-keys of table
+          for combinations being the hash-values of table
+          collect (list* key (if (listp combinations)
+                                 (prefix-tree combinations)
+                                 combinations)))))
+
 (declaim (inline sqr))
 (defun sqr (a)
   (expt a 2))

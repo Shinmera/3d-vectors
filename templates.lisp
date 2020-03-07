@@ -108,3 +108,29 @@
        ,@(loop for type in (instances (allocate-instance (find-class template-type)))
                for op = (apply #'compose-name #\/ template-name (append template-args (template-arguments type)))
                collect `(,(name type) (,op ,@args))))))
+
+(defun emit-type-dispatch (args parts)
+  (let ((tree (prefix-tree (loop for (type . expansion) in parts
+                                 for i from 0
+                                 collect (append type i)))))
+    (labels ((emit-dispatch (args types)
+               `(etypecase ,(first args)
+                  ,@(loop for (type . rest) in types
+                          collect `(,type
+                                    ,@(if (consp rest)
+                                          (list (emit-dispatch (rest args) rest))
+                                          (rest (nth rest parts))))))))
+      (emit-dispatch args tree))))
+
+(defmacro define-type-dispatch (name args &body expansions)
+  (let ((argvars (remove '&optional args)))
+    `(progn
+       (defun ,name ,args
+         ,(emit-type-dispatch argvars expansions))
+       #+sbcl
+       (sb-c:defknown ,name ,(loop for arg in args collect (if (find arg lambda-list-keywords) arg '*))
+           *)
+       #+sbcl
+       ,@(loop for (type . body) in expansions
+               collect `(sb-c:deftransform ,name (,args ,type T)
+                          ,@body)))))
