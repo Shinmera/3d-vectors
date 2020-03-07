@@ -43,3 +43,10 @@
 (declaim (inline sqr))
 (defun sqr (a)
   (expt a 2))
+
+(defun type-prefix (type)
+  (ecase type
+    (f32 '||)
+    (f64 'd)
+    (u32 'u)
+    (i32 'i)))

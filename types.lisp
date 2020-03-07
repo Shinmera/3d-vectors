@@ -29,13 +29,6 @@
   (check-type value (signed-byte 32))
   value)
 
-(defun type-prefix (type)
-  (ecase type
-    (f32 '||)
-    (f64 'd)
-    (u32 'u)
-    (i32 'i)))
-
 (define-template-type vec (<s> <t>)
     (compose-name NIL (type-prefix <t>) 'vec <s>)
   (loop for i from 0 below <s>
@@ -49,6 +42,9 @@
 
 (do-vec-combinations define-vec)
 
+(defmethod print-object ((vec vec2) stream)
+  (write (list (type-of vec) (vx2 vec) (vy2 vec)) :stream stream))
+
 (define-type-dispatch vec2 (&optional a b)
   ((null null)
    (%vec2 0f0 0f0))
@@ -56,6 +52,9 @@
    (%vec2 (f32 a) (f32 b)))
   ((real null)
    (%vec2 (f32 a) (f32 a))))
+
+(defmethod print-object ((vec vec3) stream)
+  (write (list (type-of vec) (vx3 vec) (vy3 vec) (vz3 vec)) :stream stream))
 
 (define-type-dispatch vec3 (&optional a b c)
   ((null null null)
@@ -70,6 +69,9 @@
    (%vec3 (f32 a) (vx2 b) (vy2 b)))
   ((vec3 null null)
    (vec3-copy a)))
+
+(defmethod print-object ((vec vec4) stream)
+  (write (list (type-of vec) (vx4 vec) (vy4 vec) (vz4 vec) (vw4 vec)) :stream stream))
 
 (define-type-dispatch vec4 (&optional a b c d)
   ((null null null null)

@@ -10,17 +10,22 @@
 (defgeneric type-instance (base-type &rest template-args))
 (defgeneric template-arguments (template-type))
 (defgeneric constructor (template-type))
-(defgeneric name (template-type))
+(defgeneric lisp-type (template-type))
 (defgeneric place (template-type qualifier))
+(defgeneric instances (template-type))
+
+(defmethod lisp-type (type)
+  (check-type type (or symbol list))
+  type)
 
 (defclass template-type ()
-  ((name :initarg :name :initform (error "name argument missing.") :reader name)
+  ((lisp-type :initarg :lisp-type :initform (error "lisp-type argument missing.") :reader lisp-type)
    (constructor :initarg :constructor :initform (error "constructor argument missing.") :reader constructor)
    (places :initarg :places :initform (error "") :reader places)))
 
 (defmethod print-object ((type template-type) stream)
   (print-unreadable-object (type stream :type T)
-    (format stream "~a <~{~a~^ ~}>" (name type)
+    (format stream "~a <~{~a~^ ~}>" (lisp-type type)
             (template-arguments type))))
 
 (defmethod type-instance ((type template-type) &rest targs)
@@ -36,12 +41,18 @@
              (return place))
         finally (error "No such place~%  ~s~%on~%  ~s" qualifier type)))
 
+(defmethod instances ((type class))
+  (instances (allocate-instance type)))
+
+(defmethod instances ((type symbol))
+  (instances (find-class type)))
+
 (defmethod type-instance ((base symbol) &rest template-args)
   (apply #'type-instance (allocate-instance (find-class base)) template-args))
 
 (defmacro define-type-instance ((template-type name) &body args)
-  `(let ((instance (make-instance ',template-type :name ',name ,@(loop for arg in args collect `',arg))))
-     (setf (instances instance) (list* instance (remove ',name (instances instance) :key #'name)))))
+  `(let ((instance (make-instance ',template-type :lisp-type ',name ,@(loop for arg in args collect `',arg))))
+     (setf (instances instance) (list* instance (remove ',name (instances instance) :key #'lisp-type)))))
 
 (defun emit-template-type (parent name fields template-args)
   `(progn
@@ -107,7 +118,7 @@
      (etypecase ,(first args)
        ,@(loop for type in (instances (allocate-instance (find-class template-type)))
                for op = (apply #'compose-name #\/ template-name (append template-args (template-arguments type)))
-               collect `(,(name type) (,op ,@args))))))
+               collect `(,(lisp-type type) (,op ,@args))))))
 
 (defun emit-type-dispatch (args parts)
   (let ((tree (prefix-tree (loop for (type . expansion) in parts
@@ -134,3 +145,34 @@
        ,@(loop for (type . body) in expansions
                collect `(sb-c:deftransform ,name (,args ,type T)
                           ,@body)))))
+
+(defun enumerate-template-type-combinations (types)
+  (labels ((expand-type (type)
+             (cond ((integerp type)
+                    (list type))
+                   ((listp type)
+                    (loop for sub in type append (expand-type sub)))
+                   ((subtypep type 'template-type)
+                    (instances type))
+                   (T
+                    (list type)))))
+    (let ((expanded (apply #'enumerate-combinations (mapcar #'expand-type types))))
+      ;; Perform back substitution of positional types
+      (dolist (types expanded expanded)
+        (loop for cons on types
+              do (when (integerp (car cons))
+                   (setf (car cons) (nth (car cons) types))))))))
+
+(defun determine-template-arguments (types)
+  (remove-duplicates
+   (loop for type in types
+         when (typep type 'template-type)
+         append (template-arguments type))))
+
+(defmacro define-templated-dispatch (name args &body expansions)
+  `(define-type-dispatch ,name ,args
+     ,@(loop for (types template . template-args) in expansions
+             append (loop for type in (enumerate-template-type-combinations types)
+                          for full-template-args = (append template-args (determine-template-arguments type))
+                          collect `(,(mapcar #'lisp-type type)
+                                    (,(apply #'compose-name #\/ template full-template-args) ,@args))))))
