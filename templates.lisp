@@ -8,6 +8,7 @@
 
 ;;; Template type mechanism
 (defgeneric type-instance (base-type &rest template-args))
+(defgeneric template-arguments (template-type))
 (defgeneric constructor (template-type))
 (defgeneric name (template-type))
 (defgeneric place (template-type qualifier))
@@ -16,6 +17,18 @@
   ((name :initarg :name :initform (error "name argument missing.") :reader name)
    (constructor :initarg :constructor :initform (error "constructor argument missing.") :reader constructor)
    (places :initarg :places :initform (error "") :reader places)))
+
+(defmethod print-object ((type template-type) stream)
+  (print-unreadable-object (type stream :type T)
+    (format stream "~a <~{~a~^ ~}>" (name type)
+            (template-arguments type))))
+
+(defmethod type-instance ((type template-type) &rest targs)
+  (loop for instance in (instances type)
+        do (when (equal targs (template-arguments instance))
+             (return instance))
+        finally (error "No such type instance of~%  ~a~%with template arguments~%  ~a"
+                       (type-of type) targs)))
 
 (defmethod place ((type template-type) qualifier)
   (loop for (names place) in (places type)
@@ -48,7 +61,6 @@
 
 (defmacro define-template-type (name template-args name-constructor &body body)
   (let ((fields (gensym "FIELDS"))
-        (targs (gensym "TEMPLATE-ARGS"))
         (class (compose-name #\- name 'type)))
     `(progn
        (defclass ,class (template-type)
@@ -58,20 +70,9 @@
                                  :initarg ,arg
                                  :reader ,arg))))
 
-       (defmethod print-object ((,class ,class) stream)
-         (print-unreadable-object (,class stream :type T)
-           (format stream "~a <~{~a~^ ~}>" (name ,class)
-                   (list ,@(loop for arg in template-args
-                                 collect `(,arg ,class))))))
-       
-       (defmethod type-instance ((,class ,class) &rest ,targs)
-         (destructuring-bind ,template-args ,targs
-           (loop for type in (instances ,class)
-                 do (when (and ,@(loop for arg in template-args
-                                       collect `(equal ,arg (,arg type))))
-                      (return type))
-                 finally (error "No such type instance of~%  ~a~%with template arguments~%  ~a"
-                                ',class ,targs))))
+       (defmethod template-arguments ((,class ,class))
+         (list ,@(loop for arg in template-args
+                       collect `(,arg ,class))))
 
        (defmacro ,(compose-name #\- 'define name) ,template-args
          (let ((,fields ()))
@@ -90,6 +91,7 @@
     (destructuring-bind (args . body) args
       `(defmacro ,(compose-name #\- 'define name) ,template-args
          `(defun ,(compose-name #\/ ',name ,@template-args) ,',args
+            (declare (optimize speed (safety 1) (debug 1) (compilation-speed 0)))
             ,@(progn ,@body))))))
 
 (defmacro do-combinations (template &rest argument-combinations)
@@ -99,11 +101,10 @@
 ;;; Dispatch mechanism
 ;; FIXME: + possible impl-specific type inference expanders
 ;; FIXME: handle args of different type combinations
-(defmacro define-dispatch (name args &rest template-combinations)
-  (destructuring-bind (base-type . combinations) template-combinations
-    `(defun ,name ,args
-       (etypecase ,(first args)
-         ,@(loop for template in (apply #'enumerate-combinations combinations)
-                 for type = (template-type base-type template)
-                 for op = (apply #'compose-name #\/ name template)
-                 collect `(,(name type) (,op ,@args)))))))
+;; FIXME: handle arg coercion
+(defmacro define-dispatch (name template-name args template-type &rest template-args)
+  `(defun ,name ,args
+     (etypecase ,(first args)
+       ,@(loop for type in (instances (allocate-instance (find-class template-type)))
+               for op = (apply #'compose-name #\/ template-name (append template-args (template-arguments type)))
+               collect `(,(name type) (,op ,@args))))))

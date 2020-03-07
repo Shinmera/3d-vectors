@@ -27,3 +27,7 @@
                         collect (list* comb rest)))
       (loop for comb in (first combinations)
             collect (list comb))))
+
+(declaim (inline sqr))
+(defun sqr (a)
+  (expt a 2))
