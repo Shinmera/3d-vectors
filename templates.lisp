@@ -144,7 +144,7 @@
        #+sbcl
        ,@(loop for (type . body) in expansions
                collect `(sb-c:deftransform ,name (,args ,type T)
-                          ,@body)))))
+                          ',@body)))))
 
 (defun enumerate-template-type-combinations (types)
   (labels ((expand-type (type)
