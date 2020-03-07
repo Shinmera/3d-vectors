@@ -6,18 +6,24 @@
 
 (in-package #:org.shirakumo.fraf.vectors)
 
-(defun type-prefix (type)
-  (ecase type
-    (single-float '||)
-    (double-float 'd)
-    (ub32 'u)
-    (sb32 'i)))
+(deftype f32 ()
+  'single-float)
 
-(deftype ub32 ()
+(deftype f64 ()
+  'double-float)
+
+(deftype u32 ()
   '(unsigned-byte 32))
 
-(deftype sb32 ()
+(deftype i32 ()
   '(signed-byte 32))
+
+(defun type-prefix (type)
+  (ecase type
+    (f32 '||)
+    (f64 'd)
+    (u32 'u)
+    (i32 'i)))
 
 (define-template-type vec (<s> <t>)
     (compose-name NIL (type-prefix <t>) 'vec <s>)
@@ -27,9 +33,7 @@
                   :type <t>
                   :alias (list i f))))
 
-(defmacro do-vec-types (macro (<s> <t>))
-  `(progn
-     ,@(loop for combination in (enumerate-combinations '(2 3 4) '(single-float double-float ub32 sb32))
-             collect `(,macro ,@combination))))
+(defmacro do-vec-combinations (template &rest other-template-args)
+  `(do-combinations ,template ,@other-template-args (2 3 4) (f32 f64 u32 i32)))
 
-(do-vec-types define-vec)
+(do-vec-combinations define-vec)
