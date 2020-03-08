@@ -86,6 +86,12 @@
                             ((f32 f64) <t>) (T 'floor))
                          (lerp (,(place type i) from) (,(place type i) to) x)))))))
 
+(define-template random <s> <t> (from to)
+  (let ((type (type-instance 'vec-type <s> <t>)))
+    `(,(constructor type)
+      ,@(loop for i from 0 below <s>
+              collect `(type-random '<t> from to)))))
+
 (do-vec-combinations define-2vecop (+ - * / min max mod))
 (do-vec-combinations define-2nvecop (+ - * / min max mod))
 (do-vec-combinations define-svecop (+ - * / min max mod))
@@ -159,6 +165,7 @@
          (- (* (vx3 a) (vy3 b))
             (* (vy3 a) (vx3 b)))))
 
+;; FIXME: it seems that chained operators don't receive transforms for some reason.
 (define-right-reductor v+ 2v+)
 (define-right-reductor v- 2v- 1v- v+)
 (define-right-reductor v* 2v*)

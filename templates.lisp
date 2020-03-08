@@ -118,17 +118,6 @@
   `(progn ,@(loop for combination in (apply #'enumerate-combinations argument-combinations)
                   collect `(,template ,@combination))))
 
-;;; Dispatch mechanism
-;; FIXME: + possible impl-specific type inference expanders
-;; FIXME: handle args of different type combinations
-;; FIXME: handle arg coercion
-(defmacro define-dispatch (name template-name args template-type &rest template-args)
-  `(defun ,name ,args
-     (etypecase ,(first args)
-       ,@(loop for type in (instances (allocate-instance (find-class template-type)))
-               for op = (apply #'compose-name #\/ template-name (append template-args (template-arguments type)))
-               collect `(,(lisp-type type) (,op ,@args))))))
-
 (defun emit-type-dispatch (args parts)
   (let ((tree (prefix-tree (loop for (type rettype . expansion) in parts
                                  for i from 0
@@ -161,7 +150,7 @@
                ;; FIXME: this is not great. optional placement should be better.
                for opttypes = (remove 'null type)
                collect `(sb-c:deftransform ,name (,args ,opttypes)
-                          (print '(expanding ,opttypes))
+                          (print '(expanding ,name ,opttypes))
                           ',@body)))))
 
 (defun enumerate-template-type-combinations (types)
@@ -240,3 +229,9 @@
               `(,',2-op ,value ,(first values)))
              (T
               `(,',name (,',2-op ,value ,(first values)) ,@(rest values)))))))
+
+(defmacro define-alias (fun args &body expansion)
+  `(progn
+     (declaim (inline ,fun))
+     (defun ,fun ,args
+       ,@expansion)))

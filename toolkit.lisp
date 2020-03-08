@@ -93,3 +93,10 @@
 (declaim (inline lerp))
 (defun lerp (from to n)
   (+ (* from (- 1 n)) (* to n)))
+
+(defun type-random (type low high)
+  (ecase type
+    (f32 (+ (f32 low) (random (- (f32 high) (f32 low)))))
+    (f64 (+ (f64 low) (random (- (f64 high) (f64 low)))))
+    (u32 (+ (u32 low) (random (- (u32 high) (u32 low)))))
+    (i32 (+ (i32 low) (random (- (i32 high) (i32 low)))))))
