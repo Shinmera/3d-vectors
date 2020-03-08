@@ -146,6 +146,7 @@
 (defmacro define-type-dispatch (name args &body expansions)
   (let ((argvars (remove '&optional args)))
     `(progn
+       #-sbcl (declaim (inline ,name))
        (defun ,name ,args
          (declare (optimize speed (debug 1) (safety 1) (compilation-speed 0)))
          ,(emit-type-dispatch argvars expansions))
@@ -155,7 +156,11 @@
          :overwrite-fndb-silently T)
        #+sbcl
        ,@(loop for (type result . body) in expansions
-               collect `(sb-c:deftransform ,name (,args ,type)
+               for opttypes = (loop for arg in args
+                                    collect (if (find arg lambda-list-keywords)
+                                                arg
+                                                (pop type)))
+               collect `(sb-c:deftransform ,name (,args ,opttypes)
                           ',@body)))))
 
 (defun enumerate-template-type-combinations (types)
@@ -188,3 +193,25 @@
                           for full-template-args = (append template-args (determine-template-arguments type))
                           collect `(,(mapcar #'lisp-type type) T
                                     (,(apply #'compose-name #\/ template full-template-args) ,@args))))))
+
+(defmacro define-reductor (name 2-op &optional 1-op (rest-op name))
+  `(progn
+     (defun ,name (value &rest values)
+       (cond ((null values)
+              ,(if 1-op
+                   `(,1-op value)
+                   'value))
+             ((null (cdr values))
+              (,2-op value (first values)))
+             (T
+              (,2-op value (reduce #',rest-op values)))))
+
+     (define-compiler-macro ,name (value &rest values)
+       (cond ((null values)
+              ,(if 1-op
+                   ``(,',1-op ,value)
+                   'value))
+             ((null (cdr values))
+              `(,',2-op ,value ,(first values)))
+             (T
+              `(,',2-op ,value (,',rest-op ,@values)))))))

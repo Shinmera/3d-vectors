@@ -40,6 +40,21 @@
                     collect `(,<op> (,(place type i) a) s)))
       a)))
 
+(define-template 1vecop <op> <s> <t> (a)
+  (let ((type (type-instance 'vec-type <s> <t>)))
+    `((declare (type ,(lisp-type type) a))
+      (,(constructor type)
+       ,@(loop for i from 0 below <s>
+               collect `(,<op> (,(place type i) a)))))))
+
+(define-template 1nvecop <op> <s> <t> (a)
+  (let ((type (type-instance 'vec-type <s> <t>)))
+    `((declare (type ,(lisp-type type) a))
+      (setf ,@(loop for i from 0 below <s>
+                    collect `(,(place type i) a)
+                    collect `(,<op> (,(place type i) a))))
+      a)))
+
 (define-template 2vecreduce <red> <comb> <s> <t> (a b)
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) a b))
@@ -65,6 +80,8 @@
 (do-vec-combinations define-2nvecop (+ - * / min max))
 (do-vec-combinations define-svecop (+ - * / min max mod))
 (do-vec-combinations define-snvecop (+ - * / min max mod))
+(do-vec-combinations define-1vecop (- /))
+(do-vec-combinations define-1nvecop (- /))
 (do-vec-combinations define-2vecreduce (and) (= /= < <= >= >))
 (do-vec-combinations define-2vecreduce (+) (*))
 (do-vec-combinations define-vecreduce (+ max) (abs)) ;1norm inorm
@@ -82,10 +99,19 @@
 (define-vecop /)
 (define-vecop min)
 (define-vecop max)
+(define-templated-dispatch 1v- (a)
+  ((vec-type) 1vecop -))
+(define-templated-dispatch 1v/ (a)
+  ((vec-type) 1vecop /))
+
+(define-reductor v+ 2v+)
+(define-reductor v- 2v- 1v- v+)
+(define-reductor v* 2v*)
+(define-reductor v/ 2v/ 1v/ v*)
 
 (defun vlimit (vec limit)
   (vclamp (- limit) vec limit))
 (defun nvlimit (vec limit)
   (nvclamp (- limit) vec limit))
 
-;; TODO: length 2norm pnorm 1+ 1- incf decf cross angle abs unit clamp lerp rot order swizzle rand align floor ceil round dist
+;; TODO: length 2norm pnorm 1+ 1- incf decf cross angle abs unit clamp lerp rot order swizzle rand align floor ceil round dist reflect
