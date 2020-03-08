@@ -115,6 +115,13 @@
                     collect `(,op (,(place type i) a) divisor)))
       a)))
 
+(define-template pnorm <s> <t> (a p)
+  (let ((type (type-instance 'vec-type <s> <t>)))
+    `((declare (type ,(lisp-type type) a))
+      (expt (+ ,@(loop for i from 0 below <s>
+                       collect `(expt (abs (,(place type i) a)) p)))
+            (/ p)))))
+
 (do-vec-combinations define-2vecop (+ - * / min max mod))
 (do-vec-combinations define-2nvecop (+ - * / min max mod))
 (do-vec-combinations define-svecop (+ - * / min max mod))
@@ -127,10 +134,11 @@
 (do-vec-combinations define-vecreduce (+ sqrt+) (sqr)) ;sqrlen 2norm
 (do-vec-combinations define-clamp)
 (do-vec-combinations define-lerp)
-;; FIXME: better naming
-(do-vec-combinations define-random)
 (do-vec-combinations define-round (floor round ceiling))
 (do-vec-combinations define-nround (floor round ceiling))
+(do-vec-combinations define-pnorm)
+;; FIXME: better naming
+(do-vec-combinations define-random)
 
 (defmacro define-2vec-dispatch (op)
   `(progn
@@ -190,6 +198,8 @@
   ((vec-type real) round ceiling))
 (define-templated-dispatch nvceiling (a divisor)
   ((vec-type real) nround ceiling))
+(define-templated-dispatch vpnorm (a p)
+  ((vec-type real) pnorm))
 
 (define-right-reductor v+ 2v+)
 (define-right-reductor v- 2v- 1v- v+)
@@ -235,4 +245,31 @@
          (- (* (vx3 a) (vy3 b))
             (* (vy3 a) (vx3 b)))))
 
-;; TODO: pnorm rot order swizzle
+(defmacro %vecrot-internal (&body body)
+  ;; https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+  ;; vr = v*cos(phi) + (kxv)*sin(phi) + k*(k*v)*(1-cos(phi)
+  `(let* ((k axis)
+          (cos (cos phi))
+          (sin (sin phi))
+          (c (vc k v))
+          (d (v. k v)))
+     (macrolet ((arith (field)
+                  `(+ (* (,field v) cos)
+                      (* (,field c) sin)
+                      (* (,field k) d (- 1 cos)))))
+       ,@body)))
+
+(defun vrot (v axis phi)
+  (let ((phi (ensure-float phi)))
+    (%vecrot-internal
+      (vec3 (arith vx3) (arith vy3) (arith vz3)))))
+
+(defun nvrot (v axis phi)
+  (let ((phi (ensure-float phi)))
+    (%vecrot-internal
+      (setf (vx3 v) (arith vx3)
+            (vy3 v) (arith vy3)
+            (vz3 v) (arith vz3))
+      v)))
+
+;; TODO: order swizzle
