@@ -40,10 +40,6 @@
                                  (prefix-tree combinations)
                                  combinations)))))
 
-(declaim (inline sqr))
-(defun sqr (a)
-  (expt a 2))
-
 (defmacro define-type-with-converter (name base-type (value) &body conversion)
   (let ((valueg (gensym "VALUE")))
     `(progn
@@ -83,3 +79,17 @@
     (f64 'd)
     (u32 'u)
     (i32 'i)))
+
+(declaim (inline sqr))
+(defun sqr (a)
+  (expt a 2))
+
+(defun sqrt+ (&rest a)
+  (sqrt (apply #'+ a)))
+
+(define-compiler-macro sqrt+ (&rest a)
+  `(sqrt (+ ,@a)))
+
+(declaim (inline lerp))
+(defun lerp (from to n)
+  (+ (* from (- 1 n)) (* to n)))

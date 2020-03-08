@@ -140,7 +140,9 @@
                                     ,(if (consp rest)
                                          (emit-dispatch (rest args) rest)
                                          (destructuring-bind (rettype . body) (rest (nth rest parts))
-                                           `(the ,rettype (progn ,@body)))))))))
+                                           (if (eql T rettype)
+                                               `(progn ,@body)
+                                               `(the ,rettype (progn ,@body))))))))))
       (emit-dispatch args tree))))
 
 (defmacro define-type-dispatch (name args &body expansions)
@@ -156,11 +158,10 @@
          :overwrite-fndb-silently T)
        #+sbcl
        ,@(loop for (type result . body) in expansions
-               for opttypes = (loop for arg in args
-                                    collect (if (find arg lambda-list-keywords)
-                                                arg
-                                                (pop type)))
+               ;; FIXME: this is not great. optional placement should be better.
+               for opttypes = (remove 'null type)
                collect `(sb-c:deftransform ,name (,args ,opttypes)
+                          (print '(expanding ,opttypes))
                           ',@body)))))
 
 (defun enumerate-template-type-combinations (types)
@@ -194,7 +195,7 @@
                           collect `(,(mapcar #'lisp-type type) T
                                     (,(apply #'compose-name #\/ template full-template-args) ,@args))))))
 
-(defmacro define-reductor (name 2-op &optional 1-op (rest-op name))
+(defmacro define-right-reductor (name 2-op &optional 1-op (rest-op name))
   `(progn
      (defun ,name (value &rest values)
        (cond ((null values)
@@ -215,3 +216,27 @@
               `(,',2-op ,value ,(first values)))
              (T
               `(,',2-op ,value (,',rest-op ,@values)))))))
+
+(defmacro define-left-reductor (name 2-op &optional 1-op)
+  `(progn
+     (defun ,name (value &rest values)
+       (cond ((null values)
+              ,(if 1-op
+                   `(,1-op value)
+                   'value))
+             ((null (cdr values))
+              (,2-op value (first values)))
+             (T
+              (loop for other in values
+                    do (setf value (,2-op value other))
+                    finally (return value)))))
+
+     (define-compiler-macro ,name (value &rest values)
+       (cond ((null values)
+              ,(if 1-op
+                   ``(,',1-op ,value)
+                   'value))
+             ((null (cdr values))
+              `(,',2-op ,value ,(first values)))
+             (T
+              `(,',name (,',2-op ,value ,(first values)) ,@(rest values)))))))
