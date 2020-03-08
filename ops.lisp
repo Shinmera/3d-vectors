@@ -88,9 +88,32 @@
 
 (define-template random <s> <t> (from to)
   (let ((type (type-instance 'vec-type <s> <t>)))
-    `(,(constructor type)
-      ,@(loop for i from 0 below <s>
-              collect `(type-random '<t> from to)))))
+    `((,(constructor type)
+        ,@(loop for i from 0 below <s>
+                collect `(type-random ',<t> from to))))))
+
+(define-template round <op> <s> <t> (a divisor)
+  (let ((type (type-instance 'vec-type <s> <t>))
+        (op (ecase <op>
+              (floor (case <t> ((f32 f64) 'ffloor) (T 'floor)))
+              (round (case <t> ((f32 f64) 'fround) (T 'round)))
+              (ceiling (case <t> ((f32 f64) 'fceiling) (T 'ceiling))))))
+    `((declare (type ,(lisp-type type) a))
+      (,(constructor type)
+       ,@(loop for i from 0 below <s>
+               collect `(,op (,(place type i) a) divisor))))))
+
+(define-template nround <op> <s> <t> (a divisor)
+  (let ((type (type-instance 'vec-type <s> <t>))
+        (op (ecase <op>
+              (floor (case <t> ((f32 f64) 'ffloor) (T 'floor)))
+              (round (case <t> ((f32 f64) 'fround) (T 'round)))
+              (ceiling (case <t> ((f32 f64) 'fceiling) (T 'ceiling))))))
+    `((declare (type ,(lisp-type type) a))
+      (setf ,@(loop for i from 0 below <s>
+                    collect `(,(place type i) a)
+                    collect `(,op (,(place type i) a) divisor)))
+      a)))
 
 (do-vec-combinations define-2vecop (+ - * / min max mod))
 (do-vec-combinations define-2nvecop (+ - * / min max mod))
@@ -104,6 +127,10 @@
 (do-vec-combinations define-vecreduce (+ sqrt+) (sqr)) ;sqrlen 2norm
 (do-vec-combinations define-clamp)
 (do-vec-combinations define-lerp)
+;; FIXME: better naming
+(do-vec-combinations define-random)
+(do-vec-combinations define-round (floor round ceiling))
+(do-vec-combinations define-nround (floor round ceiling))
 
 (defmacro define-2vec-dispatch (op)
   `(progn
@@ -150,6 +177,28 @@
   ((real vec-type real) clamp))
 (define-templated-dispatch vlerp (from to x)
   ((vec-type 0 single-float) lerp))
+;; FIXME: Handle optionals in dispatch
+(define-templated-dispatch vfloor (a divisor)
+  ((vec-type real) round floor))
+(define-templated-dispatch nvfloor (a divisor)
+  ((vec-type real) nround floor))
+(define-templated-dispatch vround (a divisor)
+  ((vec-type real) round round))
+(define-templated-dispatch nvround (a divisor)
+  ((vec-type real) nround round))
+(define-templated-dispatch vceiling (a divisor)
+  ((vec-type real) round ceiling))
+(define-templated-dispatch nvceiling (a divisor)
+  ((vec-type real) nround ceiling))
+
+(define-right-reductor v+ 2v+)
+(define-right-reductor v- 2v- 1v- v+)
+(define-right-reductor v* 2v*)
+(define-right-reductor v/ 2v/ 1v/ v*)
+(define-left-reductor nv+ 2nv+)
+(define-left-reductor nv- 2v- 1v-)
+(define-left-reductor nv* 2nv*)
+(define-left-reductor nv/ 2v/ 1v/)
 
 (define-alias vlength (a)
   (v2norm a))
@@ -165,6 +214,18 @@
   (vclamp (- limit) vec limit))
 (define-alias nvlimit (vec limit)
   (nvclamp (- limit) vec limit))
+(define-alias vangle (a b)
+  (acos (/ (v. a b) (v2norm a) (v2norm b))))
+(define-alias vunit (a)
+  (v/ a (v2norm a)))
+(define-alias nvunit (a)
+  (nv/ a (v2norm a)))
+(define-alias valign (a grid)
+  (nv* (nvfloor (v+ a (/ grid 2)) grid) grid))
+(define-alias nvalign (a grid)
+  (nv* (nvfloor (nv+ a (/ grid 2)) grid) grid))
+(define-alias vdistance (a b)
+  (v2norm (v- a b)))
 
 (defun vc (a b)
   (%vec3 (- (* (vy3 a) (vz3 b))
@@ -174,10 +235,4 @@
          (- (* (vx3 a) (vy3 b))
             (* (vy3 a) (vx3 b)))))
 
-(define-right-reductor v+ 2v+)
-(define-right-reductor v- 2v- 1v- v+)
-(define-right-reductor v* 2v*)
-(define-right-reductor v/ 2v/ 1v/ v*)
-(define-left-reductor nv+ 2nv+)
-
-;; TODO: angle unit rot order swizzle rand dist align floor ceil round
+;; TODO: pnorm rot order swizzle
