@@ -55,25 +55,34 @@
      (setf (instances instance) (list* instance (remove ',name (instances instance) :key #'lisp-type)))))
 
 (defun emit-template-type (parent name fields template-args)
-  `(progn
-     (define-type-instance (,parent ,name)
-       :constructor ,(compose-name NIL '% name)
-       :places ,(loop for (name type alias) in fields
-                      collect `(,alias ,name))
-       ,@template-args)
-     
-     (defstruct (,name (:constructor ,(compose-name NIL '% name)
-                           ,(loop for (name type alias) in fields collect name))
-                       (:copier ,(compose-name #\- name 'copy))
-                       (:predicate ,(compose-name #\- name 'p))
-                       (:conc-name NIL))
-       ,@(loop for (name type alias) in fields
-               collect `(,name NIL :type ,type)))))
+  (let ((constructor (compose-name NIL '% name)))
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
+       (define-type-instance (,parent ,name)
+         :constructor ,(compose-name NIL '% name)
+         :places ,(loop for (name type alias) in fields
+                        collect `(,alias ,name))
+         ,@template-args)
+
+       (declaim (inline ,constructor ,@(mapcar #'first fields)))
+       (defstruct (,name (:constructor ,constructor
+                             ,(loop for (name type alias) in fields collect name))
+                         (:copier ,(compose-name #\- name 'copy))
+                         (:predicate ,(compose-name #\- name 'p))
+                         (:conc-name NIL))
+         ,@(loop for (name type alias) in fields
+                 collect `(,name NIL :type ,type)))
+
+       (defmethod print-object ((,name ,name) stream)
+         (write (list ',name ,@(loop for field in fields collect `(,(first field) ,name)))
+                :stream stream))
+
+       (defmethod make-load-form ((,name ,name) &optional env)
+         (list ',constructor ,@(loop for field in fields collect `(,(first field) ,name)))))))
 
 (defmacro define-template-type (name template-args name-constructor &body body)
   (let ((fields (gensym "FIELDS"))
         (class (compose-name #\- name 'type)))
-    `(progn
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
        (defclass ,class (template-type)
          ((instances :initform () :accessor instances :allocation :class)
           ,@(loop for arg in template-args
@@ -121,29 +130,32 @@
                collect `(,(lisp-type type) (,op ,@args))))))
 
 (defun emit-type-dispatch (args parts)
-  (let ((tree (prefix-tree (loop for (type . expansion) in parts
+  (let ((tree (prefix-tree (loop for (type rettype . expansion) in parts
                                  for i from 0
                                  collect (append type i)))))
     (labels ((emit-dispatch (args types)
                `(etypecase ,(first args)
                   ,@(loop for (type . rest) in types
                           collect `(,type
-                                    ,@(if (consp rest)
-                                          (list (emit-dispatch (rest args) rest))
-                                          (rest (nth rest parts))))))))
+                                    ,(if (consp rest)
+                                         (emit-dispatch (rest args) rest)
+                                         (destructuring-bind (rettype . body) (rest (nth rest parts))
+                                           `(the ,rettype (progn ,@body)))))))))
       (emit-dispatch args tree))))
 
 (defmacro define-type-dispatch (name args &body expansions)
   (let ((argvars (remove '&optional args)))
     `(progn
        (defun ,name ,args
+         (declare (optimize speed (debug 1) (safety 1) (compilation-speed 0)))
          ,(emit-type-dispatch argvars expansions))
        #+sbcl
-       (sb-c:defknown ,name ,(loop for arg in args collect (if (find arg lambda-list-keywords) arg '*))
-           *)
+       (sb-c:defknown ,name ,(loop for arg in args collect (if (find arg lambda-list-keywords) arg '*)) *
+           (sb-c:any)
+         :overwrite-fndb-silently T)
        #+sbcl
-       ,@(loop for (type . body) in expansions
-               collect `(sb-c:deftransform ,name (,args ,type T)
+       ,@(loop for (type result . body) in expansions
+               collect `(sb-c:deftransform ,name (,args ,type)
                           ',@body)))))
 
 (defun enumerate-template-type-combinations (types)
@@ -174,5 +186,5 @@
      ,@(loop for (types template . template-args) in expansions
              append (loop for type in (enumerate-template-type-combinations types)
                           for full-template-args = (append template-args (determine-template-arguments type))
-                          collect `(,(mapcar #'lisp-type type)
+                          collect `(,(mapcar #'lisp-type type) T
                                     (,(apply #'compose-name #\/ template full-template-args) ,@args))))))

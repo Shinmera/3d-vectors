@@ -44,6 +44,39 @@
 (defun sqr (a)
   (expt a 2))
 
+(defmacro define-type-with-converter (name base-type (value) &body conversion)
+  (let ((valueg (gensym "VALUE")))
+    `(progn
+       (deftype ,name ()
+         ',base-type)
+       
+       (declaim (ftype (function (T) ,base-type) ,name))
+       (defun ,name (,value)
+         (declare (optimize speed (debug 1) (safety 1) (compilation-speed 0)))
+         ,@conversion)
+
+       (define-compiler-macro ,name (,valueg &environment env)
+         (if (constantp ,valueg env)
+             `(load-time-value
+               (let ((,',value ,,valueg))
+                 ,@',conversion))
+             `(let ((,',value ,,valueg))
+                ,@',conversion))))))
+
+(define-type-with-converter f32 single-float (value)
+  (float value 0f0))
+
+(define-type-with-converter f64 double-float (value)
+  (float value 0d0))
+
+(define-type-with-converter u32 (unsigned-byte 32) (value)
+  (check-type value (unsigned-byte 32))
+  value)
+
+(define-type-with-converter i32 (signed-byte 32) (value)
+  (check-type value (signed-byte 32))
+  value)
+
 (defun type-prefix (type)
   (ecase type
     (f32 '||)
