@@ -110,9 +110,18 @@
      (define-templated-dispatch ,(compose-name NIL '2v op) (a b)
        ((vec-type real) svecop ,op)
        ((vec-type 0) 2vecop ,op))
+     #+sbcl
+     (sb-c:defoptimizer (,(compose-name NIL '2v op) sb-c:derive-type) ((a b))
+       (declare (ignore b))
+       (sb-c::lvar-type a))
+     
      (define-templated-dispatch ,(compose-name NIL '2nv op) (a b)
        ((vec-type real) snvecop ,op)
-       ((vec-type 0) 2nvecop ,op))))
+       ((vec-type 0) 2nvecop ,op))
+     #+sbcl
+     (sb-c:defoptimizer (,(compose-name NIL '2nv op) sb-c:derive-type) ((a b))
+       (declare (ignore b))
+       (sb-c::lvar-type a))))
 
 (defmacro define-1vec-dispatch (name op &rest template-args)
   `(define-templated-dispatch ,name (a)
@@ -165,7 +174,6 @@
          (- (* (vx3 a) (vy3 b))
             (* (vy3 a) (vx3 b)))))
 
-;; FIXME: it seems that chained operators don't receive transforms for some reason.
 (define-right-reductor v+ 2v+)
 (define-right-reductor v- 2v- 1v- v+)
 (define-right-reductor v* 2v*)
