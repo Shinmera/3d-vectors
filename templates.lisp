@@ -111,7 +111,7 @@
     (destructuring-bind (args . body) args
       `(defmacro ,(compose-name #\- 'define name) ,template-args
          `(defun ,(compose-name #\/ ',name ,@template-args) ,',args
-            (declare (optimize speed (safety 1) (debug 1) (compilation-speed 0)))
+            (declare (optimize speed (safety 0) (debug 0) (compilation-speed 0)))
             ,@(progn ,@body))))))
 
 (defmacro do-combinations (template &rest argument-combinations)

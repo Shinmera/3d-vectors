@@ -21,6 +21,7 @@
 
 ;; This reads like a war zone
 ;; FIXME: The deftransforms on REALs clobber more precise type information.
+;; FIXME: Convert between vecs
 (defmacro define-vec-constructors (type)
   (flet ((constructor (size)
            (constructor (type-instance 'vec-type size type)))
@@ -103,3 +104,22 @@
 (define-vec-constructors f64)
 (define-vec-constructors u32)
 (define-vec-constructors i32)
+
+(defmacro define-vec-accessor (name i)
+  (let ((instances (loop for instance in (instances 'vec-type)
+                         when (< i (<s> instance))
+                         collect instance)))
+    `(progn
+       (define-type-dispatch ,name (vec)
+         ,@(loop for type in instances
+                 collect `((,(lisp-type type)) ,(<t> type)
+                           (,(place type i) vec))))
+       (define-type-dispatch (setf ,name) (value vec)
+         ,@(loop for type in instances
+                 collect `((,(<t> type) ,(lisp-type type)) ,(<t> type)
+                           (setf (,(place type i) vec) value)))))))
+
+(define-vec-accessor vx 0)
+(define-vec-accessor vy 1)
+(define-vec-accessor vz 2)
+(define-vec-accessor vw 3)

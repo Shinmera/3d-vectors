@@ -122,6 +122,17 @@
                        collect `(expt (abs (,(place type i) a)) p)))
             (/ p)))))
 
+(define-template swizzle <fields> <s> <t> (a)
+  (let ((type (type-instance 'vec-type <s> <t>))
+        (target (type-instance 'vec-type (length (string <fields>)) <t>)))
+    `((declare (type ,(lisp-type type) a))
+      (,(constructor target)
+       ,@(loop for name across (string <fields>)
+               for field = (intern (string name))
+               collect (if (eql field '_)
+                           `(,<t> 0)
+                           `(,(place type field) a)))))))
+
 (do-vec-combinations define-2vecop (+ - * / min max mod))
 (do-vec-combinations define-2nvecop (+ - * / min max mod))
 (do-vec-combinations define-svecop (+ - * / min max mod))
@@ -272,4 +283,37 @@
             (vz3 v) (arith vz3))
       v)))
 
-;; TODO: order swizzle
+(defmacro vsetf (vec x &optional y z w)
+  (let ((vecg (gensym "VECTOR")))
+    `(let ((,vecg ,vec))
+       (psetf (vx ,vecg) ,x
+              ,@(when y `((vy ,vecg) ,y))
+              ,@(when z `((vz ,vecg) ,z))
+              ,@(when w `((vw ,vecg) ,w)))
+       ,vecg)))
+
+(defmacro vapply (&environment env vec op &optional x y z w)
+  (let ((vecg (gensym "VECTOR")))
+    `(let ((,vecg ,vec))
+       (etypecase ,vecg
+         (vec2 (vec2 (,op (vx2 ,vecg) ,@(when x (list x)))
+                     (,op (vy2 ,vecg) ,@(when y (list y)))))
+         (vec3 (vec3 (,op (vx3 ,vecg) ,@(when x (list x)))
+                     (,op (vy3 ,vecg) ,@(when y (list y)))
+                     (,op (vz3 ,vecg) ,@(when z (list z)))))
+         (vec4 (vec4 (,op (vx4 ,vecg) ,@(when x (list x)))
+                     (,op (vy4 ,vecg) ,@(when y (list y)))
+                     (,op (vz4 ,vecg) ,@(when z (list z)))
+                     (,op (vw4 ,vecg) ,@(when w (list w)))))))))
+
+(defmacro vapplyf (&environment env vec op &optional x y z w)
+  (let ((vecg (gensym "VECTOR")))
+    `(let ((,vecg ,vec))
+       (vsetf ,vecg
+              (,op (vx ,vecg) ,@(when x (list x)))
+              (,op (vy ,vecg) ,@(when y (list y)))
+              (,op (vz ,vecg) ,@(when z (list z)))
+              (,op (vw ,vecg) ,@(when w (list w))))
+       ,vecg)))
+
+;; TODO: order swizzle with-vec constants
