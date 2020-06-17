@@ -30,7 +30,7 @@
 (define-ofun vec2 (x y)
   (%vec2 (ensure-float x) (ensure-float y)))
 
-(define-compiler-macro vec2 (&whole whole &environment env x y)
+(define-compiler-macro vec2 (&environment env x y)
   `(%vec2 ,(ensure-float-param x env)
           ,(ensure-float-param y env)))
 
@@ -64,7 +64,7 @@
 (define-ofun vec3 (x y z)
   (%vec3 (ensure-float x) (ensure-float y) (ensure-float z)))
 
-(define-compiler-macro vec3 (&whole whole &environment env x y z)
+(define-compiler-macro vec3 (&environment env x y z)
   `(%vec3 ,(ensure-float-param x env)
           ,(ensure-float-param y env)
           ,(ensure-float-param z env)))
@@ -102,7 +102,7 @@
 (define-ofun vec4 (x y z w)
   (%vec4 (ensure-float x) (ensure-float y) (ensure-float z) (ensure-float w)))
 
-(define-compiler-macro vec4 (&whole whole &environment env x y z w)
+(define-compiler-macro vec4 (&environment env x y z w)
   `(%vec4 ,(ensure-float-param x env)
           ,(ensure-float-param y env)
           ,(ensure-float-param z env)
