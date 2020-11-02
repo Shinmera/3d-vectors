@@ -374,10 +374,11 @@
 
 (declaim (ftype (function (vec vec) #.*float-type*) vangle))
 (define-ofun vangle (a b)
-  (acos
-   (/ (v. a b)
-      (v2norm a)
-      (v2norm b))))
+  (let ((a (/ (v. a b)
+              (v2norm a)
+              (v2norm b))))
+    (acos (the (#.*float-type* -1f0 +1f0)
+               (min #.(ensure-float +1) (max #.(ensure-float -1) a))))))
 
 (declaim (inline vabs))
 (declaim (ftype (function (vec) vec) vabs))
