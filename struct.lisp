@@ -14,6 +14,7 @@
      (defsetf* ,name (vec &environment env) (value)
        `(setf (,',rel ,vec) ,(ensure-float-param value env)))))
 
+(declaim (inline %vec2))
 (defstruct (vec2 (:conc-name NIL)
                  (:constructor %vec2 (%vx2 %vy2))
                  (:copier vcopy2)
@@ -45,6 +46,7 @@
   (declare (ignore env))
   `(vec2 ,(vx2 v) ,(vy2 v)))
 
+(declaim (inline %vec3))
 (defstruct (vec3 (:conc-name NIL)
                  (:constructor %vec3 (%vx3 %vy3 %vz3))
                  (:copier vcopy3)
@@ -80,6 +82,7 @@
   (declare (ignore env))
   `(vec3 ,(vx3 v) ,(vy3 v) ,(vz3 v)))
 
+(declaim (inline %vec4))
 (defstruct (vec4 (:conc-name NIL)
                  (:constructor %vec4 (%vx4 %vy4 %vz4 %vw4))
                  (:copier vcopy4)
