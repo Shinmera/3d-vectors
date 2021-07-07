@@ -257,8 +257,8 @@
     `(let ((,v ,vec))
        (etypecase ,v
          (vec2 (%vsetf ,v ,x ,y))
-         (vec3 (%vsetf ,v ,x ,y ,(or z `(vz3 ,vec))))
-         (vec4 (%vsetf ,v ,x ,y ,(or z `(vz4 ,vec)) ,(or w `(vw4 ,vec)))))
+         (vec3 (%vsetf ,v ,x ,y ,(or z `(vz3 ,v))))
+         (vec4 (%vsetf ,v ,x ,y ,(or z `(vz4 ,v)) ,(or w `(vw4 ,v)))))
        ,v)))
 
 (defmacro vapply (&environment env vec op &optional x y z w)
