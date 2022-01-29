@@ -147,7 +147,7 @@
 (define-vector-constant +vz+ 0 0 1)
 
 (declaim (inline vdistance))
-(declaim (ftype (function (vec vec) #.*float-type*) vdistance))
+(declaim (ftype (function (vec vec) (#.*float-type* #.(ensure-float 0))) vdistance))
 (define-ofun vdistance (a b)
   (etypecase a
     (vec2 (etypecase b
@@ -164,7 +164,7 @@
                            (expt (- (vw4 a) (vw4 b)) 2))))))))
 
 (declaim (inline vsqrdistance))
-(declaim (ftype (function (vec vec) #.*float-type*) vsqrdistance))
+(declaim (ftype (function (vec vec) (#.*float-type* #.(ensure-float 0))) vsqrdistance))
 (define-ofun vsqrdistance (a b)
   (etypecase a
     (vec2 (etypecase b
@@ -180,22 +180,27 @@
                      (expt (- (vz4 a) (vz4 b)) 2)
                      (expt (- (vw4 a) (vw4 b)) 2)))))))
 
-(declaim (inline vlength))
-(declaim (ftype (function (vec) #.*float-type*) vlength))
-(define-ofun vlength (v)
+(declaim (inline vsqrlength))
+(declaim (ftype (function (vec) (#.*float-type* #.(ensure-float 0))) vsqrlength))
+(define-ofun vsqrlength (v)
   (etypecase v
-    (vec2 (sqrt (+ (expt (vx2 v) 2)
-                   (expt (vy2 v) 2))))
-    (vec3 (sqrt (+ (expt (vx3 v) 2)
-                   (expt (vy3 v) 2)
-                   (expt (vz3 v) 2))))
-    (vec4 (sqrt (+ (expt (vx4 v) 2)
-                   (expt (vy4 v) 2)
-                   (expt (vz4 v) 2)
-                   (expt (vw4 v) 2))))))
+    (vec2 (+ (expt (vx2 v) 2)
+             (expt (vy2 v) 2)))
+    (vec3 (+ (expt (vx3 v) 2)
+             (expt (vy3 v) 2)
+             (expt (vz3 v) 2)))
+    (vec4 (+ (expt (vx4 v) 2)
+             (expt (vy4 v) 2)
+             (expt (vz4 v) 2)
+             (expt (vw4 v) 2)))))
+
+(declaim (inline vlength))
+(declaim (ftype (function (vec) (#.*float-type* #.(ensure-float 0))) vlength))
+(define-ofun vlength (v)
+  (sqrt (vsqrlength v)))
 
 (declaim (inline v2norm))
-(declaim (ftype (function (vec) #.*float-type*) v2norm))
+(declaim (ftype (function (vec) (#.*float-type* #.(ensure-float 0))) v2norm))
 (define-ofun v2norm (v)
   (etypecase v
     (vec2 (sqrt (+ (expt (vx2 v) 2)
@@ -209,7 +214,7 @@
                    (expt (vw4 v) 2))))))
 
 (declaim (inline v1norm))
-(declaim (ftype (function (vec) #.*float-type*) v1norm))
+(declaim (ftype (function (vec) (#.*float-type* #.(ensure-float 0))) v1norm))
 (define-ofun v1norm (v)
   (etypecase v
     (vec2 (+ (abs (vx2 v))
@@ -223,7 +228,7 @@
              (abs (vw4 v))))))
 
 (declaim (inline vinorm))
-(declaim (ftype (function (vec) #.*float-type*) vinorm))
+(declaim (ftype (function (vec) (#.*float-type* #.(ensure-float 0))) vinorm))
 (define-ofun vinorm (v)
   (etypecase v
     (vec2 (max (abs (vx2 v))
@@ -237,7 +242,7 @@
                (abs (vw4 v))))))
 
 (declaim (inline vpnorm))
-(declaim (ftype (function (vec (real 1)) #.*float-type*) vpnorm))
+(declaim (ftype (function (vec (real 1)) (#.*float-type* #.(ensure-float 0))) vpnorm))
 (define-ofun vpnorm (v p)
   (let ((p (ensure-float p)))
     (etypecase v

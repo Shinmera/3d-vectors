@@ -37,6 +37,7 @@
    #:vdistance
    #:vsqrdistance
    #:vlength
+   #:vsqrlength
    #:v2norm
    #:v1norm
    #:vinorm

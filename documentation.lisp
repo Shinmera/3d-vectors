@@ -40,6 +40,7 @@ If the vector does not have a particular field, the variable is initialized to 0
   (vdistance "Returns the distance from A to B.")
   (vsqrdistance "Returns the squared distance from A to B.")
   (vlength "Returns the euclidean norm of the vector.")
+  (vlength "Returns the squared euclidean norm of the vector.")
   (v2norm "Returns the euclidean/2-norm of the vector.")
   (v1norm "Returns the taxicab/1-norm of the vector.")
   (vinorm "Returns the maximum-norm of the vector.")
