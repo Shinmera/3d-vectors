@@ -35,6 +35,7 @@
    #:+vy+
    #:+vz+
    #:vdistance
+   #:vsqrdistance
    #:vlength
    #:v2norm
    #:v1norm
@@ -64,8 +65,16 @@
    #:nvmod
    #:vunit
    #:nvunit
+   #:vunit*
+   #:nvunit*
    #:vscale
    #:nvscale
+   #:vfloor
+   #:nvfloor
+   #:vceiling
+   #:nvceiling
+   #:vround
+   #:nvround
    #:vclamp
    #:nvclamp
    #:vlimit
@@ -75,6 +84,14 @@
    #:nvrot
    #:vrotv
    #:nvrotv
+   #:vrot2
+   #:nvrot2
+   #:v<-
+   #:vrand
+   #:valign
+   #:nvalign
+   #:vpolar
+   #:vcartesian
    #:vorder
    #:nvorder
    ;; swizzlers are autoexport.

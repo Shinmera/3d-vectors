@@ -163,6 +163,23 @@
                            (expt (- (vz4 a) (vz4 b)) 2)
                            (expt (- (vw4 a) (vw4 b)) 2))))))))
 
+(declaim (inline vsqrdistance))
+(declaim (ftype (function (vec vec) #.*float-type*) vsqrdistance))
+(define-ofun vsqrdistance (a b)
+  (etypecase a
+    (vec2 (etypecase b
+            (vec2 (+ (expt (- (vx2 a) (vx2 b)) 2)
+                     (expt (- (vy2 a) (vy2 b)) 2)))))
+    (vec3 (etypecase b
+            (vec3 (+ (expt (- (vx3 a) (vx3 b)) 2)
+                     (expt (- (vy3 a) (vy3 b)) 2)
+                     (expt (- (vz3 a) (vz3 b)) 2)))))
+    (vec4 (etypecase b
+            (vec4 (+ (expt (- (vx4 a) (vx4 b)) 2)
+                     (expt (- (vy4 a) (vy4 b)) 2)
+                     (expt (- (vz4 a) (vz4 b)) 2)
+                     (expt (- (vw4 a) (vw4 b)) 2)))))))
+
 (declaim (inline vlength))
 (declaim (ftype (function (vec) #.*float-type*) vlength))
 (define-ofun vlength (v)
@@ -405,10 +422,24 @@
 (define-ofun vunit (a)
   (v/ a (vlength a)))
 
+(declaim (inline vunit*))
+(declaim (ftype (function (vec) vec) vunit*))
+(define-ofun vunit* (a)
+  (if (v= a 0)
+      (vec 0 0)
+      (v/ a (vlength a))))
+
 (declaim (inline nvunit))
 (declaim (ftype (function (vec) vec) nvunit))
 (define-ofun nvunit (vec)
   (nv/ vec (vlength vec)))
+
+(declaim (inline nvunit*))
+(declaim (ftype (function (vec) vec) nvunit*))
+(define-ofun nvunit* (vec)
+  (if (v= vec 0)
+      vec
+      (nv/ vec (vlength vec))))
 
 (declaim (inline vscale))
 (declaim (ftype (function (vec real) vec) vscale))
@@ -416,9 +447,26 @@
   (nv* (vunit a) length))
 
 (declaim (inline nvscale))
-(declaim (ftype (function (vec real) vec) vscale))
+(declaim (ftype (function (vec real) vec) nvscale))
 (define-ofun nvscale (vec length)
   (nv* (nvunit vec) length))
+
+(macrolet ((define-roundfun (fun vname nvname)
+             `(progn
+                (declaim (inline ,vname))
+                (declaim (ftype (function (vec &optional real) vec) ,vname))
+                (define-ofun ,vname (vec &optional (divisor 1.0))
+                  (let ((divisor (ensure-float divisor)))
+                    (vapply vec ,fun divisor divisor divisor divisor)))
+
+                (declaim (inline ,nvname))
+                (declaim (ftype (function (vec &optional real) vec) ,nvname))
+                (define-ofun ,nvname (vec &optional (divisor 1.0))
+                  (let ((divisor (ensure-float divisor)))
+                    (vapplyf vec ,fun divisor divisor divisor divisor))))))
+  (define-roundfun floor vfloor nvfloor)
+  (define-roundfun ceiling vceiling nvceiling)
+  (define-roundfun round vround nvround))
 
 (declaim (inline vclamp))
 (declaim (ftype (function ((or vec real) vec (or vec real)) vec) vclamp))
@@ -537,6 +585,121 @@
                        +vx+ (vx3 b))
                 +vy+ (vy3 b))
          +vz+ (vz3 b)))
+
+(declaim (inline vrot2))
+(declaim (ftype (function (vec2 real) vec2) vrot2))
+(define-ofun vrot2 (vec phi)
+  (let* ((angle (ensure-float phi))
+         (sin (sin angle))
+         (cos (cos angle)))
+    (vec (- (* (vx2 vec) cos) (* (vy2 vec) sin))
+         (+ (* (vx2 vec) sin) (* (vy2 vec) cos)))))
+
+(declaim (ftype (function (vec2 real) vec2) nvrot2))
+(define-ofun nvrot2 (v axis phi)
+  (let* ((angle (ensure-float phi))
+         (sin (sin angle))
+         (cos (cos angle)))
+    (vsetf vec
+           (- (* (vx2 vec) cos) (* (vy2 vec) sin))
+           (+ (* (vx2 vec) sin) (* (vy2 vec) cos)))))
+
+(declaim (inline v<-))
+(declaim (ftype (function (vec vec) vec) v<-))
+(define-ofun v<- (target source)
+  (etypecase source
+    (vec2 (vsetf target (vx2 source) (vy2 source)))
+    (vec3 (vsetf target (vx3 source) (vy3 source) (vz3 source)))
+    (vec4 (vsetf target (vx4 source) (vy4 source) (vz4 source) (vw4 source)))))
+
+(declaim (ftype (function ((or vec real) (or vec real)) vec) vrand))
+(define-ofun vrand (x var)
+  (flet ((random* (x var)
+           (if (= 0.0 var)
+               x
+               (+ x (- (random var) (/ var 2f0))))))
+    (etypecase var
+      (real
+       (let ((var (ensure-float var)))
+         (etypecase x
+           (vec2 (vec (random* (vx2 x) var)
+                      (random* (vy2 x) var)))
+           (vec3 (vec (random* (vx3 x) var)
+                      (random* (vy3 x) var)
+                      (random* (vz3 x) var)))
+           (vec4 (vec (random* (vx4 x) var)
+                      (random* (vy4 x) var)
+                      (random* (vz4 x) var)
+                      (random* (vw4 x) var))))))
+      (vec2 (etypecase x
+              (real
+               (let ((x (ensure-float x)))
+                 (vec (random* x (vx2 var))
+                      (random* x (vy2 var)))))
+              (vec2 (vec (random* (vx2 x) (vx2 var))
+                         (random* (vy2 x) (vy2 var))))))
+      (vec3 (etypecase x
+              (real
+               (let ((x (ensure-float x)))
+                 (vec (random* x (vx3 var))
+                      (random* x (vy3 var))
+                      (random* x (vz3 var)))))
+              (vec3 (vec (random* (vx3 x) (vx3 var))
+                         (random* (vy3 x) (vy3 var))
+                         (random* (vz3 x) (vz3 var))))))
+      (vec4 (etypecase x
+              (real
+               (let ((x (ensure-float x)))
+                 (vec (random* x (vx4 var))
+                      (random* x (vy4 var))
+                      (random* x (vz4 var))
+                      (random* x (vw4 var)))))
+              (vec4 (vec (random* (vx4 x) (vx4 var))
+                         (random* (vy4 x) (vy4 var))
+                         (random* (vz4 x) (vz4 var))
+                         (random* (vw4 x) (vw4 var)))))))))
+
+(declaim (inline valign))
+(declaim (ftype (function (vec real) vec) valign))
+(define-ofun valign (vec grid)
+  (let* ((grid (ensure-float grid))
+         (grid/2 (* grid 0.5)))
+    (vec (* grid (floor (+ (vx vec) grid/2) grid))
+         (* grid (floor (+ (vy vec) grid/2) grid))
+         (* grid (floor (+ (vz vec) grid/2) grid))
+         (* grid (floor (+ (vw vec) grid/2) grid)))))
+
+(declaim (inline nvalign))
+(declaim (ftype (function (vec real) vec) nvalign))
+(define-ofun nvalign (vec grid)
+  (let* ((grid (ensure-float grid))
+         (grid/2 (* grid 0.5)))
+    (vsetf vec
+           (* grid (floor (+ (vx vec) grid/2) grid))
+           (* grid (floor (+ (vy vec) grid/2) grid))
+           (* grid (floor (+ (vz vec) grid/2) grid))
+           (* grid (floor (+ (vw vec) grid/2) grid)))))
+
+(declaim (inline vcartesian))
+(declaim (ftype (function (vec) vec) vcartesian))
+(define-ofun vcartesian (vec)
+  (etypecase vec
+    (vec2 (vec2 (* (vx2 vec) (cos (vy2 vec)))
+                (* (vx2 vec) (sin (vy2 vec)))))
+    (vec3 (vec3 (* (vx3 vec) (cos (vy3 vec)) (sin (vz3 vec)))
+                (* (vx3 vec) (sin (vy3 vec)) (sin (vz3 vec)))
+                (* (vx3 vec)                 (cos (vz3 vec)))))))
+
+(declaim (inline vpolar))
+(declaim (ftype (function (vec) vec) vpolar))
+(define-ofun vpolar (vec)
+  (etypecase vec
+    (vec2 (vec2 (vlength vec)
+                (atan (vy vec) (vx vec))))
+    (vec3 (let ((len (vlength vec)))
+            (vec3 len
+                  (atan (vy vec) (vx vec))
+                  (acos (/ len (vz vec))))))))
 
 (declaim (ftype (function (vec symbol &optional symbol symbol symbol) vec) vorder))
 (define-ofun vorder (v x &optional y z w)

@@ -38,6 +38,7 @@ If the vector does not have a particular field, the variable is initialized to 0
   (variable +vz+ "Constant vector for the 3D unit in Z direction.")
   
   (vdistance "Returns the distance from A to B.")
+  (vsqrdistance "Returns the squared distance from A to B.")
   (vlength "Returns the euclidean norm of the vector.")
   (v2norm "Returns the euclidean/2-norm of the vector.")
   (v1norm "Returns the taxicab/1-norm of the vector.")
@@ -75,11 +76,25 @@ This operation does not work with 2D or 4D vectors.")
   (vmod "Returns a vector with each component being the modulus of the given vector's against the divisor.")
   (nvmod "Performs MOD on each component of the vector and stores back the results.")
 
-  (vunit "Returns the unit vector form of the given vector by the 2-norm.")
-  (nvunit "Normalizes the vector into its unit form by the 2-norm.")
+  (vunit "Returns the unit vector form of the given vector by the 2-norm. If the vector is zero, an error is signalled.
+See VUNIT*")
+  (nvunit "Normalizes the vector into its unit form by the 2-norm. If the vector is zero, an error is signalled.
+See NVUNIT*")
+
+  (vunit* "Returns the unit vector form of the given vector by the 2-norm. If the vector is zero, returns a zero vector.
+See VUNIT")
+  (nvunit* "Normalizes the vector into its unit form by the 2-norm. If the vector is zero, returns it unmodified.
+See NVUNIT")
 
   (vscale "Returns a scaled vector of the specified length.")
   (nvscale "Scales the vector to be of the specified length.")
+
+  (vfloor "Returns a vector with all components floored.")
+  (vfloor "Floors all components of the vector.")
+  (vceiling "Returns a vector with all components ceilinged.")
+  (vceiling "Ceilings all components of the vector.")
+  (vround "Returns a vector with all components rounded.")
+  (vround "Rounds all components of the vector.")
   
   (vclamp "Returns a clamped vector where each field is within [LOWER, UPPER]. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.")
   (nvclamp "Clamps the vector such that each field is within [LOWER, UPPER]. Accepts REALs or VECs as limits, where REALs are used for each component of the vector.")
@@ -90,9 +105,13 @@ This operation does not work with 2D or 4D vectors.")
   (vlerp "Returns a vector where each field is linearly interpolated from the corresponding field in FROM to TO by N. Accepts a REAL or VEC for N, where REALs are used for each component of the vector.")
 
   (vrot "Returns a 3D vector rotated around AXIS by PHI rads. The axis has to be a unit vector.
-This operation does not work with 2D or 4D vectors.")
+This operation does not work with 2D or 4D vectors.
+
+See VROT2")
   (nvrot "Rotates the 3D vector around AXIS by PHI rads. The axis has to be a unit vector.
-This operation does not work with 2D or 4D vectors.")
+This operation does not work with 2D or 4D vectors.
+
+See NVROT2")
   
   (vrotv "Returns a 3D vector of A rotated around each axis by the amount in B. The rotations are performed in the order of X, Y, Z.
 Note that rotation in 3D space is not commutative, so this function might not perform the rotation as you expected if you need the rotation to happen in a different order.
@@ -104,6 +123,21 @@ Note that rotation in 3D space is not commutative, so this function might not pe
 This operation does not work with 2D or 4D vectors.
 
 See NVROT.")
+  (vrot2 "Returns a 2D vector rotated around zero by PHI rads.")
+  (nvrot2 "Rotates the 2D vector A around zero by PHI rads.")
+
+  (v<- "Copies the fields from SOURCE into TARGET.")
+  
+  (vrand "Returns a vector with each of the fields having a value in [x-var, x+var].
+Either X or VAR must be a vector. If both are vectors, they must match in type.")
+
+  (valign "Returns a vector aligned to the given grid size.")
+  (nvalign "Aligns the vector to the given grid size.")
+
+  (vpolar "Returns the polar/spherical coordinate translation of the given cartesian vector.
+For 2D vectors it will be R,PHI, for 3D, R,PHI,THETA")
+  (vcartesian "Returns the cartesian coordinate translation of the given polar/spherical vector.
+For 2D vectors it has to be R,PHI, for 3D R,PHI,THETA")
 
   (vorder "Allows you to handily create a new vector with reordered components.
 Each X/Y/Z argument can be one of 'X,'Y,'Z,'VX,'VY,'VZ,:X,:Y,:Z indicating the respective component, or NIL for 0.")
