@@ -601,7 +601,7 @@
          (+ (* (vx2 vec) sin) (* (vy2 vec) cos)))))
 
 (declaim (ftype (function (vec2 real) vec2) nvrot2))
-(define-ofun nvrot2 (v axis phi)
+(define-ofun nvrot2 (vec phi)
   (let* ((angle (ensure-float phi))
          (sin (sin angle))
          (cos (cos angle)))
