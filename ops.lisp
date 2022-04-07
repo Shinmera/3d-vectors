@@ -42,7 +42,8 @@
 (defmacro with-vec ((x y &optional (z (gensym "Z")) (w (gensym "W"))) val &body body)
   (let ((valvar (gensym "VAL")))
     `(let ((,valvar ,val) (,x #.(ensure-float 0)) (,y #.(ensure-float 0)) (,z #.(ensure-float 0)) (,w #.(ensure-float 0)))
-       (declare (type ,*float-type* ,x ,y ,z ,w))
+       (declare (type ,*float-type* ,x ,y ,z ,w)
+                (ignorable ,z ,w))
        (etypecase ,valvar
          (real (let ((,valvar (ensure-float ,valvar)))
                  (declare (type ,*float-type* ,valvar))
