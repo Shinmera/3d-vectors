@@ -432,7 +432,7 @@
 (declaim (ftype (function (vec) vec) vunit*))
 (define-ofun vunit* (a)
   (if (v= a 0)
-      (vec 0 0)
+      (vcopy a)
       (v/ a (vlength a))))
 
 (declaim (inline nvunit))
