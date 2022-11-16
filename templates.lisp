@@ -6,6 +6,16 @@
 
 (in-package #:org.shirakumo.fraf.vectors)
 
+(define-condition template-unfulfillable (error)
+  ())
+
+(define-condition no-such-place (error)
+  ((qualifier :initarg :qualifier)
+   (type :initarg :type))
+  (:report (lambda (c s) (format s "No such place~%  ~s~%on~%  ~s"
+                                 (slot-value c 'qualifier)
+                                 (slot-value c 'type)))))
+
 ;;; Template type mechanism
 (defgeneric type-instance (base-type &rest template-args))
 (defgeneric template-arguments (template-type))
@@ -39,7 +49,13 @@
   (loop for (names place) in (places type)
         do (when (find qualifier names)
              (return place))
-        finally (error "No such place~%  ~s~%on~%  ~s" qualifier type)))
+        finally (error 'no-such-place :qualifier qualifier :qualifier type)))
+
+(defmethod place-type ((type template-type) qualifier)
+  (loop for (names place type) in (places type)
+        do (when (find qualifier names)
+             (return type))
+        finally (error 'no-such-place :qualifier qualifier :qualifier type)))
 
 (defmethod instances ((type class))
   (instances (allocate-instance type)))
@@ -60,7 +76,7 @@
        (define-type-instance (,parent ,name)
          :constructor ,(compose-name NIL '% name)
          :places ,(loop for (name type alias) in fields
-                        collect `(,alias ,name))
+                        collect `(,alias ,name ,type))
          ,@template-args)
 
        (declaim (inline ,constructor ,@(mapcar #'first fields)))
@@ -107,16 +123,20 @@
 ;;; Template mechanism
 (defmacro define-template (name &rest args)
   (let ((template-args (loop until (listp (car args))
-                             collect (pop args))))
+                             collect (pop args)))
+        (macro-name (gensym "NAME")))
     (destructuring-bind (args . body) args
-      `(defmacro ,(compose-name #\- 'define name) ,template-args
-         `(defun ,(compose-name #\/ ',name ,@template-args) ,',args
+      `(defmacro ,(compose-name #\- 'define name) (,@template-args &optional (,macro-name))
+         `(defun ,(or ,macro-name (compose-name #\/ ',name ,@template-args)) ,',args
             (declare (optimize speed (safety 0) (debug 0) (compilation-speed 0)))
             ,@(progn ,@body))))))
 
 (defmacro do-combinations (template &rest argument-combinations)
-  `(progn ,@(loop for combination in (apply #'enumerate-combinations argument-combinations)
-                  collect `(,template ,@combination))))
+  (destructuring-bind (template &optional name) (enlist template)
+    `(progn ,@(loop for combination in (apply #'enumerate-combinations argument-combinations)
+                    when (handler-case (funcall (macro-function template) `(,template ,@combination) NIL)
+                           (template-unfulfillable () NIL))
+                    collect `(,template ,@combination ,@(if name (list (apply #'format-name name combination))))))))
 
 (defun emit-type-dispatch (args parts)
   (let ((tree (prefix-tree (loop for (type rettype . expansion) in parts

@@ -6,6 +6,21 @@
 
 (in-package #:org.shirakumo.fraf.vectors)
 
+(defun enlist (list-ish &rest els)
+  (if (listp list-ish) list-ish (list* list-ish els)))
+
+(defun format-name (format &rest args)
+  (let ((str (format NIL "~?" format args)))
+    (intern
+     (ecase (readtable-case *readtable*)
+       (:upcase (string-upcase str))
+       (:downcase (string-downcase str))
+       (:preserve str)
+       (:invert (loop for i from 0 below (length str)
+                      for char = (char str i)
+                      do (setf (char str i) (if (upper-case-p char) (char-downcase char) (char-upcase char)))
+                      finally (return str)))))))
+
 (defun compose-name (separator &rest parts)
   (intern
    (with-output-to-string (out)
@@ -80,9 +95,15 @@
     (u32 'u)
     (i32 'i)))
 
-(declaim (inline sqr))
+(declaim (inline sqr sqr2 grid))
 (defun sqr (a)
   (expt a 2))
+
+(defun sqr2 (a b)
+  (+ (expt a 2) (expt b 2)))
+
+(defun grid (a g)
+  (* g (floor (+ a (/ g 2)) g)))
 
 (defun sqrt+ (&rest a)
   (sqrt (apply #'+ a)))
@@ -92,7 +113,13 @@
 
 (declaim (inline lerp))
 (defun lerp (from to n)
+  (declare (optimize speed (safety 0)))
   (+ (* from (- 1 n)) (* to n)))
+
+(declaim (inline clamp))
+(defun clamp (min x max)
+  (declare (optimize speed (safety 0)))
+  (min (max x min) max))
 
 (defun type-random (type low high)
   (ecase type
