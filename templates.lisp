@@ -127,13 +127,17 @@
         (macro-name (gensym "NAME")))
     (destructuring-bind (args . body) args
       `(defmacro ,(compose-name #\- 'define name) (,@template-args &optional (,macro-name))
-         (multiple-value-bind (body signature) (progn ,@body)
-           (let ((name (or ,macro-name (compose-name #\/ ',name ,@template-args))))
-             `(progn
-                ,@(when signature `((declaim (ftype ,signature ,name))))
-                (defun ,name ,',args
-                  (declare (optimize speed (safety 0) (debug 0) (compilation-speed 0)))
-                  ,@body))))))))
+         (let ((body (progn ,@body))
+               (name (or ,macro-name (compose-name #\/ ',name ,@template-args))))
+           `(progn
+              (declaim (ftype (function ,(loop with types = (declared-variable-types body)
+                                               for arg in ',args
+                                               collect (or (second (assoc arg types)) 'T))
+                                        ,(declared-return-type body))
+                              ,name))
+              (defun ,name ,',args
+                (declare (optimize speed (safety 0) (debug 0) (compilation-speed 0)))
+                ,@body)))))))
 
 (defmacro do-combinations (template &rest argument-combinations)
   (destructuring-bind (template &optional name) (enlist template)

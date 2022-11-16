@@ -55,6 +55,26 @@
                                  (prefix-tree combinations)
                                  combinations)))))
 
+(defun declarations (forms)
+  (loop for form = (pop forms)
+        while (and (listp form) (eql 'declare (car form)))
+        append (rest form)))
+
+(defun declared-variable-types (forms)
+  (loop for declaration in (declarations forms)
+        when (eql 'type (first declaration))
+        append (loop with type = (second declaration)
+                     for arg in (rest declaration)
+                     collect (list arg type))))
+
+(defun declared-return-type (forms)
+  (loop for declaration in (declarations forms)
+        when (eql 'return-type (first declaration))
+        return (second declaration)
+        finally (return T)))
+
+(declaim (declaration return-type))
+
 (defmacro define-type-with-converter (name base-type (value) &body conversion)
   (let ((valueg (gensym "VALUE")))
     `(progn
@@ -81,8 +101,7 @@
   (float value 0d0))
 
 (define-type-with-converter u32 (unsigned-byte 32) (value)
-  (check-type value (unsigned-byte 32))
-  value)
+  (ldb (byte 32 0) (truncate value)))
 
 (define-type-with-converter i32 (signed-byte 32) (value)
   (check-type value (signed-byte 32))

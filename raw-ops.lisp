@@ -9,56 +9,56 @@
 ;; Element-Wise vector operation
 (define-template 2vecop <op> <s> <t> (x a b)
   (let ((type (type-instance 'vec-type <s> <t>)))
-    (values `((declare (type ,(lisp-type type) x a b))
-              (psetf ,@(loop for i from 0 below <s>
-                             collect `(,(place type i) x)
-                             collect `(,<op> (,(place type i) a)
-                                             (,(place type i) b))))
-              x)
-            `(function (,(lisp-type type) ,(lisp-type type) ,(lisp-type type)) ,(lisp-type type)))))
+    `((declare (type ,(lisp-type type) x a b)
+               (return-type ,(lisp-type type)))
+      (psetf ,@(loop for i from 0 below <s>
+                     collect `(,(place type i) x)
+                     collect `(,<op> (,(place type i) a)
+                                     (,(place type i) b))))
+      x)))
 
 ;; Element-wise scalar operation
 (define-template svecop <op> <s> <t> (x a s)
   (let ((type (type-instance 'vec-type <s> <t>)))
-    (values `((declare (type ,(lisp-type type) x a)
-                       (type ,<t> s))
-              (psetf ,@(loop for i from 0 below <s>
-                             collect `(,(place type i) x)
-                             collect `(,<op> (,(place type i) a) s)))
-              x)
-            `(function (,(lisp-type type) ,(lisp-type type) ,<t>) ,(lisp-type type)))))
+    `((declare (type ,(lisp-type type) x a)
+               (type ,<t> s)
+               (return-type ,(lisp-type type)))
+      (psetf ,@(loop for i from 0 below <s>
+                     collect `(,(place type i) x)
+                     collect `(,<op> (,(place type i) a) s)))
+      x)))
 
 ;; Element-wise operation
 (define-template 1vecop <op> <s> <t> (x a)
   (let ((type (type-instance 'vec-type <s> <t>)))
-    (values `((declare (type ,(lisp-type type) x a))
-              (psetf ,@(loop for i from 0 below <s>
-                             collect `(,(place type i) x)
-                             collect `(,<op> (,(place type i) a))))
-              x)
-            `(function (,(lisp-type type) ,(lisp-type type)) ,(lisp-type type)))))
+    `((declare (type ,(lisp-type type) x a)
+               (return-type ,(lisp-type type)))
+      (psetf ,@(loop for i from 0 below <s>
+                     collect `(,(place type i) x)
+                     collect `(,<op> (,(place type i) a))))
+      x)))
 
 ;; Element-wise vector reduce operation
+;; FIXME: How do we determine the return-type?
 (define-template 2vecreduce <red> <comb> <s> <t> (a b)
   (let ((type (type-instance 'vec-type <s> <t>)))
-    (values `((declare (type ,(lisp-type type) a b))
-              (,<red> ,@(loop for i from 0 below <s>
-                              collect `(,<comb> (,(place type i) a)
-                                                (,(place type i) b)))))
-            `(function (,(lisp-type type) ,(lisp-type type)) T))))
+    `((declare (type ,(lisp-type type) a b))
+      (,<red> ,@(loop for i from 0 below <s>
+                      collect `(,<comb> (,(place type i) a)
+                                        (,(place type i) b)))))))
 
 ;; Element-wise reduce operation
 (define-template 1vecreduce <red> <comb> <s> <t> (a)
   (let ((type (type-instance 'vec-type <s> <t>)))
-    (values `((declare (type ,(lisp-type type) a))
-              (,<red> ,@(loop for i from 0 below <s>
-                              collect `(,<comb> (,(place type i) a)))))
-            `(function (,(lisp-type type)) T))))
+    `((declare (type ,(lisp-type type) a))
+      (,<red> ,@(loop for i from 0 below <s>
+                      collect `(,<comb> (,(place type i) a)))))))
 
 (define-template clamp <s> <t> (x lower a upper)
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) a x)
-               (type ,<t> lower upper))
+               (type ,<t> lower upper)
+               (return-type ,(lisp-type type)))
       (psetf ,@(loop for i from 0 below <s>
                      collect `(,(place type i) x)
                      collect `(clamp lower (,(place type i) a) upper)))
@@ -66,7 +66,8 @@
 
 (define-template limit <s> <t> (x a l)
   (let ((type (type-instance 'vec-type <s> <t>)))
-    `((declare (type ,(lisp-type type) a x l))
+    `((declare (type ,(lisp-type type) a x l)
+               (return-type ,(lisp-type type)))
       (psetf ,@(loop for i from 0 below <s>
                      collect `(,(place type i) x)
                      collect `(clamp (- (,(place type i) l)) (,(place type i) a) (+ (,(place type i) l)))))
@@ -75,7 +76,8 @@
 (define-template lerp <s> <t> (x from to tt)
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) x from to)
-               (type single-float tt))
+               (type single-float tt)
+               (return-type ,(lisp-type type)))
       (psetf ,@(loop for i from 0 below <s>
                      collect `(,(place type i) x)
                      collect `(,(case <t> ((f32 f64) <t>) (T 'floor))
@@ -84,7 +86,8 @@
 
 (define-template random <s> <t> (x from to)
   (let ((type (type-instance 'vec-type <s> <t>)))
-    `((declare (type ,(lisp-type type) x from to))
+    `((declare (type ,(lisp-type type) x from to)
+               (return-type ,(lisp-type type)))
       (psetf ,@(loop for i from 0 below <s>
                      collect `(,(place type i) x)
                      collect `(let ((lo (,(place type i) from))
@@ -98,7 +101,8 @@
               (floor (case <t> ((f32 f64) 'ffloor) (T 'floor)))
               (round (case <t> ((f32 f64) 'fround) (T 'round)))
               (ceiling (case <t> ((f32 f64) 'fceiling) (T 'ceiling))))))
-    `((declare (type ,(lisp-type type) x a))
+    `((declare (type ,(lisp-type type) x a)
+               (return-type ,(lisp-type type)))
       (psetf ,@(loop for i from 0 below <s>
                      collect `(,(place type i) x)
                      collect `(,op (,(place type i) a) divisor)))
@@ -106,8 +110,9 @@
 
 (define-template pnorm <s> <t> (a p)
   (let ((type (type-instance 'vec-type <s> <t>)))
-    `((declare (type ,(lisp-type type) a))
-      (declare (type ,<t> p))
+    `((declare (type ,(lisp-type type) a)
+               (type ,<t> p)
+               (return-type ,(case <t> (f32 'f32) (f64 'f64) (T 'real))))
       (expt (+ ,@(loop for i from 0 below <s>
                        collect `(expt (abs (,(place type i) a)) p)))
             (/ p)))))
@@ -120,8 +125,9 @@
                                 (#\_ 0) (#\x 1) (#\y 2) (#\z 3) (#\w 4)))))
     (when (< <s> arity)
       (error 'template-unfulfillable))
-    `((declare (type ,(lisp-type type) a))
-      (declare (type ,(lisp-type target) x))
+    `((declare (type ,(lisp-type type) a)
+               (type ,(lisp-type target) x)
+               (return-type ,(lisp-type target)))
       (psetf ,@(loop for name across (string <fields>)
                      for field = (intern (string name))
                      for i from 0 below <s>
@@ -144,7 +150,9 @@
                   (#\Z ,(maybe-place 2))
                   (#\W ,(maybe-place 3))
                   (#\_ (,(place-type type 0) 0)))))
-      `((declare (type ,(lisp-type type) a))
+      `((declare (type ,(lisp-type type) a)
+                 (type *vec x)
+                 (return-type *vec))
         (let* ((fields (string fields))
                (len (length fields)))
           (when (< 4 len) (error "Bad swizzle spec: ~a" fields))
@@ -157,7 +165,8 @@
 (define-template cross <s> <t> (x a b)
   (when (/= 3 <s>) (error 'template-unfulfillable))
   (let ((type (type-instance 'vec-type <s> <t>)))
-    `((declare (type ,(lisp-type type) x a b))
+    `((declare (type ,(lisp-type type) x a b)
+               (return-type ,(lisp-type type)))
       (let ((ax (,(place type 0) a))
             (ay (,(place type 1) a))
             (az (,(place type 2) a))
@@ -176,8 +185,9 @@
              `(+ (* (,field a) cos)
                  (* (,field c) sin)
                  (* (,field axis) d (- 1 cos)))))
-      `((declare (type ,(lisp-type type) x a axis))
-        (declare (type single-float phi))
+      `((declare (type ,(lisp-type type) x a axis)
+                 (type single-float phi)
+                 (return-type ,(lisp-type type)))
         (let* ((cos (the single-float (cos phi)))
                (sin (the single-float (sin phi)))
                (c (,(constructor type) ,@(make-list <s> :initial-element (funcall <t> 0))))
@@ -201,7 +211,6 @@
 (do-vec-combinations define-limit)
 (do-vec-combinations define-lerp)
 (do-vec-combinations define-round (floor round ceiling))
-(do-vec-combinations define-nround (floor round ceiling))
 (do-vec-combinations define-pnorm)
 (do-vec-combinations define-random)
 (do-vec-combinations define-order)

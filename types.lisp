@@ -123,3 +123,10 @@
 (define-vec-accessor vy 1)
 (define-vec-accessor vz 2)
 (define-vec-accessor vw 3)
+
+(deftype vec () '(or vec2 vec3 vec4))
+(deftype dvec () '(or dvec2 dvec3 dvec4))
+(deftype ivec () '(or ivec2 ivec3 ivec4))
+(deftype uvec () '(or uvec2 uvec3 uvec4))
+(deftype *vec () '(or vec dvec ivec uvec))
+
