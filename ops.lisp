@@ -36,25 +36,17 @@
 
 (defmacro define-2vec-dispatch (op)
   `(progn
-     (define-templated-dispatch ,(compose-name NIL '2v op) (a b)
-       ((vec-type real) svecop ,op)
-       ((vec-type 0) 2vecop ,op))
+     (define-templated-dispatch ,(compose-name NIL '!2v op) (x a b)
+       ((vec-type 0 real) svecop ,op)
+       ((vec-type 0 0) 2vecop ,op))
      #+sbcl
-     (sb-c:defoptimizer (,(compose-name NIL '2v op) sb-c:derive-type) ((a b))
-       (declare (ignore b))
-       (sb-c::lvar-type a))
-     
-     (define-templated-dispatch ,(compose-name NIL '2nv op) (a b)
-       ((vec-type real) snvecop ,op)
-       ((vec-type 0) 2nvecop ,op))
-     #+sbcl
-     (sb-c:defoptimizer (,(compose-name NIL '2nv op) sb-c:derive-type) ((a b))
-       (declare (ignore b))
-       (sb-c::lvar-type a))))
+     (sb-c:defoptimizer (,(compose-name NIL '!2v op) sb-c:derive-type) ((x a b))
+       (declare (ignore a b))
+       (sb-c::lvar-type x))))
 
 (defmacro define-1vec-dispatch (name op &rest template-args)
-  `(define-templated-dispatch ,name (a)
-     ((vec-type) ,op ,@template-args)))
+  `(define-templated-dispatch ,name (x a)
+     ((vec-type 0) ,op ,@template-args)))
 
 (define-2vec-dispatch +)
 (define-2vec-dispatch -)
@@ -73,6 +65,7 @@
 (define-1vec-dispatch vinorm vecreduce max abs)
 (define-1vec-dispatch v2norm vecreduce sqrt+ sqr)
 (define-1vec-dispatch vqsrlen vecreduce + sqr)
+
 (define-templated-dispatch v. (a b)
   ((vec-type 0) 2vecreduce + *))
 (define-templated-dispatch vclamp (low x up)
@@ -114,21 +107,5 @@
   (nv+ a d))
 (define-alias vdecf (a &optional (d 1))
   (nv- a d))
-(define-alias vlimit (vec limit)
-  (vclamp (- limit) vec limit))
-(define-alias nvlimit (vec limit)
-  (nvclamp (- limit) vec limit))
-(define-alias vangle (a b)
-  (acos (/ (v. a b) (v2norm a) (v2norm b))))
-(define-alias vunit (a)
-  (v/ a (v2norm a)))
-(define-alias nvunit (a)
-  (nv/ a (v2norm a)))
-(define-alias valign (a grid)
-  (nv* (nvfloor (v+ a (/ grid 2)) grid) grid))
-(define-alias nvalign (a grid)
-  (nv* (nvfloor (nv+ a (/ grid 2)) grid) grid))
-(define-alias vdistance (a b)
-  (v2norm (v- a b)))
 
 ;; TODO: order swizzle with-vec constants
