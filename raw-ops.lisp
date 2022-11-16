@@ -10,7 +10,8 @@
 (define-template 2vecop <op> <s> <t> (x a b)
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) x a b)
-               (return-type ,(lisp-type type)))
+               (return-type ,(lisp-type type))
+               inline)
       (psetf ,@(loop for i from 0 below <s>
                      collect `(,(place type i) x)
                      collect `(,<op> (,(place type i) a)
@@ -22,7 +23,8 @@
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) x a)
                (type ,<t> s)
-               (return-type ,(lisp-type type)))
+               (return-type ,(lisp-type type))
+               inline)
       (psetf ,@(loop for i from 0 below <s>
                      collect `(,(place type i) x)
                      collect `(,<op> (,(place type i) a) s)))
@@ -32,27 +34,41 @@
 (define-template 1vecop <op> <s> <t> (x a)
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) x a)
-               (return-type ,(lisp-type type)))
+               (return-type ,(lisp-type type))
+               inline)
       (psetf ,@(loop for i from 0 below <s>
                      collect `(,(place type i) x)
                      collect `(,<op> (,(place type i) a))))
       x)))
 
 ;; Element-wise vector reduce operation
-;; FIXME: How do we determine the return-type?
-(define-template 2vecreduce <red> <comb> <s> <t> (a b)
-  (let ((type (type-instance 'vec-type <s> <t>)))
-    `((declare (type ,(lisp-type type) a b))
-      (,<red> ,@(loop for i from 0 below <s>
-                      collect `(,<comb> (,(place type i) a)
-                                        (,(place type i) b)))))))
+(define-template 2vecreduce <red> <comb> rtype <s> <t> (a b)
+  (let ((type (type-instance 'vec-type <s> <t>))
+        (rtype (case rtype
+                 (<t> <t>)
+                 (float (case <t> (f64 'f64) (T 'f32)))
+                 (T rtype))))
+    `((declare (type ,(lisp-type type) a b)
+               (return-type ,rtype)
+               inline)
+      (,(if (member rtype '(f32 f64 i32 u32)) rtype 'progn)
+       (,<red> ,@(loop for i from 0 below <s>
+                       collect `(,<comb> (,(place type i) a)
+                                         (,(place type i) b))))))))
 
 ;; Element-wise reduce operation
-(define-template 1vecreduce <red> <comb> <s> <t> (a)
-  (let ((type (type-instance 'vec-type <s> <t>)))
-    `((declare (type ,(lisp-type type) a))
-      (,<red> ,@(loop for i from 0 below <s>
-                      collect `(,<comb> (,(place type i) a)))))))
+(define-template 1vecreduce <red> <comb> rtype <s> <t> (a)
+  (let ((type (type-instance 'vec-type <s> <t>))
+        (rtype (case rtype
+                 (<t> <t>)
+                 (float (case <t> (f64 'f64) (T 'f32)))
+                 (T rtype))))
+    `((declare (type ,(lisp-type type) a)
+               (return-type ,rtype)
+               inline)
+      (,(if (member rtype '(f32 f64 i32 u32)) rtype 'progn)
+       (,<red> ,@(loop for i from 0 below <s>
+                       collect `(,<comb> (,(place type i) a))))))))
 
 (define-template clamp <s> <t> (x lower a upper)
   (let ((type (type-instance 'vec-type <s> <t>)))
@@ -202,11 +218,13 @@
 (do-vec-combinations define-2vecop (+ - * / min max mod))
 (do-vec-combinations define-svecop (+ - * / min max mod grid))
 (do-vec-combinations define-1vecop (- / abs identity))
-(do-vec-combinations define-2vecreduce (and) (= /= < <= >= >))
-(do-vec-combinations define-2vecreduce (+) (*)) ; dot
-(do-vec-combinations define-2vecreduce (+ sqrt+) (sqr2)) ; sqrdist dist
-(do-vec-combinations define-1vecreduce (+ max) (abs)) ; 1norm inorm
-(do-vec-combinations define-1vecreduce (+ sqrt+) (sqr)) ; sqrlen 2norm
+(do-vec-combinations define-2vecreduce (and) (= /= < <= >= >) boolean)
+(do-vec-combinations define-2vecreduce (+) (*) <t>) ; dot
+(do-vec-combinations define-2vecreduce (sqrt+) (sqr2) float) ; dist
+(do-vec-combinations define-2vecreduce (+) (sqr2) <t>) ; sqrdist
+(do-vec-combinations define-1vecreduce (+ max) (abs) <t>) ; 1norm inorm
+(do-vec-combinations define-1vecreduce (sqrt+) (sqr) float) ; 2norm
+(do-vec-combinations define-1vecreduce (+) (sqr) <t>) ; sqrlen
 (do-vec-combinations define-clamp)
 (do-vec-combinations define-limit)
 (do-vec-combinations define-lerp)

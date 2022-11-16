@@ -37,10 +37,10 @@
 
 (defun enumerate-combinations (&rest combinations)
   (if (cdr combinations)
-      (loop for comb in (first combinations)
+      (loop for comb in (enlist (first combinations))
             nconc (loop for rest in (apply #'enumerate-combinations (rest combinations))
                         collect (list* comb rest)))
-      (loop for comb in (first combinations)
+      (loop for comb in (enlist (first combinations))
             collect (list comb))))
 
 (defun prefix-tree (combinations)
@@ -55,21 +55,24 @@
                                  (prefix-tree combinations)
                                  combinations)))))
 
+(defun declaration-p (thing)
+  (and (listp thing) (eql 'declare (car thing))))
+
 (defun declarations (forms)
   (loop for form = (pop forms)
-        while (and (listp form) (eql 'declare (car form)))
+        while (declaration-p form)
         append (rest form)))
 
 (defun declared-variable-types (forms)
   (loop for declaration in (declarations forms)
-        when (eql 'type (first declaration))
+        when (and (listp declaration) (eql 'type (first declaration)))
         append (loop with type = (second declaration)
                      for arg in (rest declaration)
                      collect (list arg type))))
 
 (defun declared-return-type (forms)
   (loop for declaration in (declarations forms)
-        when (eql 'return-type (first declaration))
+        when (and (listp declaration) (eql 'return-type (first declaration)))
         return (second declaration)
         finally (return T)))
 

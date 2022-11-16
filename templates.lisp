@@ -128,16 +128,21 @@
     (destructuring-bind (args . body) args
       `(defmacro ,(compose-name #\- 'define name) (,@template-args &optional (,macro-name))
          (let ((body (progn ,@body))
-               (name (or ,macro-name (compose-name #\/ ',name ,@template-args))))
+               (name (or ,macro-name (compose-name #\/ ',name ,@(loop for arg in template-args
+                                                                      when (char= #\< (char (string arg) 0))
+                                                                      collect arg)))))
            `(progn
               (declaim (ftype (function ,(loop with types = (declared-variable-types body)
                                                for arg in ',args
                                                collect (or (second (assoc arg types)) 'T))
                                         ,(declared-return-type body))
-                              ,name))
+                              ,name)
+                       ,@(when (find 'inline (declarations body))
+                           `((inline ,name))))
               (defun ,name ,',args
-                (declare (optimize speed (safety 0) (debug 0) (compilation-speed 0)))
-                ,@body)))))))
+                (declare (optimize speed (safety 0) (debug 0) (compilation-speed 0))
+                         ,@(remove 'inline (declarations body)))
+                ,@(remove-if #'declaration-p body))))))))
 
 (defmacro do-combinations (template &rest argument-combinations)
   (destructuring-bind (template &optional name) (enlist template)
