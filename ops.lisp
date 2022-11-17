@@ -11,19 +11,21 @@
 ;; [ ] vsetf
 ;; [ ] v= v/= v< v> v<= v>=
 ;; [ ] vmin vmax
-;; [ ] vdistance vsqrdistance
-;; [ ] vlength vsqrlength
-;; [ ] v2norm v1norm vinorm vpnorm
+;; [x] vdistance vsqrdistance
+;; [x] vlength vsqrlength
+;; [x] v2norm v1norm vinorm vpnorm
 ;; [ ] vapply
-;; [ ] v<-
+;; [x] v<-
 ;; [ ] v+ v- v* v/
-;; [ ] v.
-;; [ ] vc
-;; [ ] vangle
+;; [x] v1+ v1-
+;; [x] vincf vdecf
+;; [x] v.
+;; [x] vc
+;; [x] vangle
 ;; [ ] vabs
 ;; [ ] vmod
-;; [ ] vunit vunit*
-;; [ ] vscale
+;; [x] vunit vunit*
+;; [x] vscale
 ;; [ ] vfloor vceiling vround
 ;; [ ] vclamp vlerp
 ;; [ ] vlimit
@@ -136,6 +138,10 @@
 ;; (define-right-reductor v* 2v*)
 ;; (define-right-reductor v/ 2v/ 1v/ v*)
 
+(define-alias vincf (a &optional (d 1))
+  (!2v+ a a d))
+(define-alias vdecf (a &optional (d 1))
+  (!2v- a a d))
 (define-alias vlength (a)
   (v2norm a))
 (define-alias v1+ (a)
