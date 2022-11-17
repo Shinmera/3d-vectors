@@ -78,6 +78,11 @@
 
 (declaim (declaration return-type))
 
+(defun lambda-list-variables (arglist)
+  (loop for arg in arglist
+        unless (find arg LAMBDA-LIST-KEYWORDS)
+        collect (if (listp arg) (car arg) arg)))
+
 (defmacro define-type-with-converter (name base-type (value) &body conversion)
   (let ((valueg (gensym "VALUE")))
     `(progn

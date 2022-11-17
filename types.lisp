@@ -124,9 +124,10 @@
 (define-vec-accessor vz 2)
 (define-vec-accessor vw 3)
 
-(deftype vec () '(or vec2 vec3 vec4))
-(deftype dvec () '(or dvec2 dvec3 dvec4))
-(deftype ivec () '(or ivec2 ivec3 ivec4))
-(deftype uvec () '(or uvec2 uvec3 uvec4))
-(deftype *vec () '(or vec dvec ivec uvec))
-
+(define-type-alias dvec dvec2 dvec3 dvec4)
+(define-type-alias ivec ivec2 ivec3 ivec4)
+(define-type-alias uvec uvec2 uvec3 uvec4)
+(define-type-alias *vec vec2 vec3 vec4 dvec2 dvec3 dvec4 ivec2 ivec3 ivec4 uvec2 uvec3 uvec4)
+(define-type-alias *vec2 vec2 dvec2 ivec2 uvec2)
+(define-type-alias *vec3 vec3 dvec3 ivec3 uvec3)
+(define-type-alias *vec4 vec4 dvec4 ivec4 uvec4)

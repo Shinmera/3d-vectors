@@ -70,6 +70,20 @@
        (,<red> ,@(loop for i from 0 below <s>
                        collect `(,<comb> (,(place type i) a))))))))
 
+(define-template svecreduce <red> <comb> rtype <s> <t> (a s)
+  (let ((type (type-instance 'vec-type <s> <t>))
+        (rtype (case rtype
+                 (<t> <t>)
+                 (float (case <t> (f64 'f64) (T 'f32)))
+                 (T rtype))))
+    `((declare (type ,(lisp-type type) a)
+               (type ,<t> s)
+               (return-type ,rtype)
+               inline)
+      (,(if (member rtype '(f32 f64 i32 u32)) rtype 'progn)
+       (,<red> ,@(loop for i from 0 below <s>
+                       collect `(,<comb> (,(place type i) a) s)))))))
+
 (define-template clamp <s> <t> (x lower a upper)
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) a x)
@@ -215,10 +229,23 @@
                  (,(place type 2) x) (,<t> ,(arith (place type 2))))
           x)))))
 
+(define-template rotate2 <s> <t> (x a phi)
+  (when (/= 2 <s>) (error 'template-unfulfillable))
+  (let ((type (type-instance 'vec-type <s> <t>)))
+    `((declare (type ,(lisp-type type) x a)
+               (type single-float phi)
+               (return-type ,(lisp-type type)))
+      (let ((sin (sin phi))
+            (cos (cos phi)))
+        (psetf (,(place type 0) x) (,<t> (- (* (,(place type 0) a) cos) (* (,(place type 1) a) sin)))
+               (,(place type 1) x) (,<t> (+ (* (,(place type 0) a) sin) (* (,(place type 1) a) cos))))
+        x))))
+
 (do-vec-combinations define-2vecop (+ - * / min max mod))
 (do-vec-combinations define-svecop (+ - * / min max mod grid))
 (do-vec-combinations define-1vecop (- / abs identity))
 (do-vec-combinations define-2vecreduce (and) (= /= < <= >= >) boolean)
+(do-vec-combinations define-svecreduce (and) (= /= < <= >= >) boolean)
 (do-vec-combinations define-2vecreduce (+) (*) <t>) ; dot
 (do-vec-combinations define-2vecreduce (sqrt+) (sqr2) float) ; dist
 (do-vec-combinations define-2vecreduce (+) (sqr2) <t>) ; sqrdist
@@ -234,6 +261,7 @@
 (do-vec-combinations define-order)
 (do-vec-combinations define-cross)
 (do-vec-combinations define-rotate)
+(do-vec-combinations define-rotate2)
 ;; FIXME: Macro expanders for the order functions
 
 ;;;; Required RAW OPS:
@@ -254,7 +282,7 @@
 ;; [/] vscale
 ;; [x] vfloor vceiling vround
 ;; [x] vclamp vlimit vlerp
-;; [ ] vrot vrotv vrot2
+;; [x] vrot vrot2
 ;; [x] vrand
 ;; [x] valign
 ;; [ ] vcartesian vpolar

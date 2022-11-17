@@ -36,7 +36,7 @@
 (defmethod print-object ((type template-type) stream)
   (print-unreadable-object (type stream :type T)
     (format stream "~a <~{~a~^ ~}>" (lisp-type type)
-            (template-arguments type))))
+            (ignore-errors (template-arguments type)))))
 
 (defmethod type-instance ((type template-type) &rest targs)
   (loop for instance in (instances type)
@@ -64,11 +64,18 @@
   (instances (find-class type)))
 
 (defmethod type-instance ((base symbol) &rest template-args)
-  (apply #'type-instance (allocate-instance (find-class base)) template-args))
+  (let ((class (find-class base)))
+    (cond ((subtypep (class-name class) 'template-type)
+           (apply #'type-instance (allocate-instance (find-class base)) template-args))
+          (T
+           (error "Not a template type: ~a" base)))))
 
 (defmacro define-type-instance ((template-type name) &body args)
   `(let ((instance (make-instance ',template-type :lisp-type ',name ,@(loop for arg in args collect `',arg))))
-     (setf (instances instance) (list* instance (remove ',name (instances instance) :key #'lisp-type)))))
+     (setf (instances instance) (list* instance (remove ',name (instances instance) :key #'lisp-type)))
+     (defmethod type-instance ((type (eql ',name)) &rest args)
+       (declare (ignore args))
+       instance)))
 
 (defun emit-template-type (parent name fields template-args)
   (let ((constructor (compose-name NIL '% name)))
@@ -120,6 +127,24 @@
                                        for temp in ',template-args
                                        collect temp collect arg))))))))
 
+(defclass type-alias (template-type)
+  ((instances :initform () :accessor instances :allocation :class)
+   (constructor :initform NIL)
+   (places :initform ())))
+
+(defmethod template-arguments ((alias type-alias))
+  ())
+
+(defmacro define-type-alias (name &rest types)
+  (destructuring-bind (type-name &optional (class-name (compose-name #\- name 'type))) (enlist name)
+    `(progn
+       (defclass ,class-name (type-alias)
+         ((instances :initform () :accessor instances :allocation :class)))
+       (setf (instances (allocate-instance (find-class ',class-name)))
+             (list ,@(loop for type in types collect `(type-instance ',type))))
+       (deftype ,type-name ()
+         '(or ,@types)))))
+
 ;;; Template mechanism
 (defmacro define-template (name &rest args)
   (let ((template-args (loop until (listp (car args))
@@ -168,7 +193,7 @@
       (emit-dispatch args tree))))
 
 (defmacro define-type-dispatch (name args &body expansions)
-  (let ((argvars (remove '&optional args)))
+  (let ((argvars (lambda-list-variables args)))
     `(progn
        #-sbcl (declaim (inline ,name))
        (defun ,name ,args
@@ -215,7 +240,7 @@
              append (loop for type in (enumerate-template-type-combinations types)
                           for full-template-args = (append template-args (determine-template-arguments type))
                           collect `(,(mapcar #'lisp-type type) T
-                                    (,(apply #'compose-name #\/ template full-template-args) ,@args))))))
+                                    (,(apply #'compose-name #\/ template full-template-args) ,@(lambda-list-variables args)))))))
 
 (defmacro define-right-reductor (name 2-op &optional 1-op (rest-op name))
   `(progn
