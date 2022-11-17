@@ -19,15 +19,16 @@
       x)))
 
 ;; Element-wise scalar operation
-(define-template svecop <op> <s> <t> (x a s)
+(define-template svecop <op> <st> <s> <t> (x a s)
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) x a)
-               (type ,<t> s)
+               (type ,(case <st> (<t> <t>) (T <st>)) s)
                (return-type ,(lisp-type type))
                inline)
-      (psetf ,@(loop for i from 0 below <s>
-                     collect `(,(place type i) x)
-                     collect `(,<op> (,(place type i) a) s)))
+      (let ((s (,<t> s)))
+        (psetf ,@(loop for i from 0 below <s>
+                       collect `(,(place type i) x)
+                       collect `(,<op> (,(place type i) a) s))))
       x)))
 
 ;; Element-wise operation
@@ -70,19 +71,20 @@
        (,<red> ,@(loop for i from 0 below <s>
                        collect `(,<comb> (,(place type i) a))))))))
 
-(define-template svecreduce <red> <comb> rtype <s> <t> (a s)
+(define-template svecreduce <red> <comb> <st> rtype <s> <t> (a s)
   (let ((type (type-instance 'vec-type <s> <t>))
         (rtype (case rtype
                  (<t> <t>)
                  (float (case <t> (f64 'f64) (T 'f32)))
                  (T rtype))))
     `((declare (type ,(lisp-type type) a)
-               (type ,<t> s)
+               (type ,(case <st> (<t> <t>) (T <st>)) s)
                (return-type ,rtype)
                inline)
-      (,(if (member rtype '(f32 f64 i32 u32)) rtype 'progn)
-       (,<red> ,@(loop for i from 0 below <s>
-                       collect `(,<comb> (,(place type i) a) s)))))))
+      (let ((s (,<t> s)))
+        (,(if (member rtype '(f32 f64 i32 u32)) rtype 'progn)
+         (,<red> ,@(loop for i from 0 below <s>
+                         collect `(,<comb> (,(place type i) a) s))))))))
 
 (define-template clamp <s> <t> (x lower a upper)
   (let ((type (type-instance 'vec-type <s> <t>)))
@@ -242,10 +244,10 @@
         x))))
 
 (do-vec-combinations define-2vecop (+ - * / min max mod))
-(do-vec-combinations define-svecop (+ - * / min max mod grid))
+(do-vec-combinations define-svecop (+ - * / min max mod grid) (<t> real))
 (do-vec-combinations define-1vecop (- / abs identity))
 (do-vec-combinations define-2vecreduce (and) (= /= < <= >= >) boolean)
-(do-vec-combinations define-svecreduce (and) (= /= < <= >= >) boolean)
+(do-vec-combinations define-svecreduce (and) (= /= < <= >= >) (<t> real) boolean)
 (do-vec-combinations define-2vecreduce (+) (*) <t>) ; dot
 (do-vec-combinations define-2vecreduce (sqrt+) (sqr2) float) ; dist
 (do-vec-combinations define-2vecreduce (+) (sqr2) <t>) ; sqrdist

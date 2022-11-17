@@ -124,6 +124,7 @@
 (define-vec-accessor vz 2)
 (define-vec-accessor vw 3)
 
+(define-type-alias fvec vec2 vec3 vec4)
 (define-type-alias dvec dvec2 dvec3 dvec4)
 (define-type-alias ivec ivec2 ivec3 ivec4)
 (define-type-alias uvec uvec2 uvec3 uvec4)

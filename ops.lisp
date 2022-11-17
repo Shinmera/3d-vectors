@@ -34,11 +34,14 @@
 ;; [ ] vorder
 ;; [ ] swizzle
 
-;; FIXME: Handle real -> <t> conversions
 (defmacro define-2vec-dispatch (op)
   `(progn
      (define-templated-dispatch ,(compose-name NIL '!2v op) (x a b)
-       ((vec-type 0 real) svecop ,op)
+       ((fvec-type 0 single-float) svecop ,op <t>)
+       ((dvec-type 0 double-float) svecop ,op <t>)
+       ((ivec-type 0 (signed-byte 32)) svecop ,op <t>)
+       ((uvec-type 0 (unsigned-byte 32)) svecop ,op <t>)
+       ((vec-type 0 real) svecop ,op real)
        ((vec-type 0 0) 2vecop ,op))
      #+sbcl
      (sb-c:defoptimizer (,(compose-name NIL '!2v op) sb-c:derive-type) ((x a b))
@@ -56,7 +59,11 @@
 
 (defmacro define-veccomp-dispatch (op)
   `(define-templated-dispatch ,(compose-name NIL '2v op) (a b)
-     ((vec-type real) svecreduce and ,op)
+     ((fvec-type single-float) svecreduce and ,op <t>)
+     ((dvec-type double-float) svecreduce and ,op <t>)
+     ((ivec-type (signed-byte 32)) svecreduce and ,op <t>)
+     ((uvec-type (unsigned-byte 32)) svecreduce and ,op <t>)
+     ((vec-type real) svecreduce and ,op real)
      ((vec-type 0) 2vecreduce and ,op)))
 
 (define-2vec-dispatch +)
@@ -68,11 +75,13 @@
 (define-2vec-dispatch mod)
 
 (define-templated-dispatch !valign (x a grid)
-  ((vec-type 0 real) svecop grid))
+  ((vec-type 0 single-float) svecop grid single-float)
+  ((vec-type 0 double-float) svecop grid double-float)
+  ((vec-type 0 integer) svecop grid integer))
 
-(define-1vec-dispatch 1v- 1vecop -)
-(define-1vec-dispatch 1v/ 1vecop /)
-(define-1vec-dispatch vabs 1vecop abs)
+(define-1vec-dispatch !1v- 1vecop -)
+(define-1vec-dispatch !1v/ 1vecop /)
+(define-1vec-dispatch !vabs 1vecop abs)
 (define-1vec-dispatch v<- 1vecop identity)
 
 (define-veccomp-dispatch =)
@@ -122,10 +131,10 @@
 (define-templated-dispatch !vrot2 (x a phi)
   ((*vec2-type 0 real) rotate2))
 
-(define-right-reductor v+ 2v+)
-(define-right-reductor v- 2v- 1v- v+)
-(define-right-reductor v* 2v*)
-(define-right-reductor v/ 2v/ 1v/ v*)
+;; (define-right-reductor v+ 2v+)
+;; (define-right-reductor v- 2v- 1v- v+)
+;; (define-right-reductor v* 2v*)
+;; (define-right-reductor v/ 2v/ 1v/ v*)
 
 (define-alias vlength (a)
   (v2norm a))
@@ -141,3 +150,9 @@
 (define-alias vscale (a s)
   (let ((x (vunit a)))
     (!2v* x x s)))
+(define-alias vangle (a b)
+  (let ((a (/ (v. a b)
+              (v2norm a)
+              (v2norm b))))
+    (acos (the (#.*float-type* -1f0 +1f0)
+               (clamp -1 a +1)))))
