@@ -35,6 +35,17 @@
 ;; [ ] vcartesian vpolar
 ;; [ ] vorder
 ;; [ ] swizzle
+;; [x] nvmin nvmax
+;; [x] nv+ nv- nv* nv/
+;; [x] nvabs
+;; [x] nvmod
+;; [x] nvfloor nvceiling nvround
+;; [x] nvclamp nvlerp
+;; [x] nvlimit
+;; [x] nvrot nvrotv nvrot2
+;; [x] nvalign
+;; [ ] nvcartesian nvpolar
+;; [x] nvorder
 
 (defmacro define-2vec-dispatch (op)
   `(progn
@@ -135,7 +146,7 @@
 (define-templated-dispatch !valign (x a grid)
   ((vec-type 0 single-float) svecop grid single-float)
   ((vec-type 0 double-float) svecop grid double-float)
-  ((vec-type 0 integer) svecop grid integer))
+  ((vec-type 0 real) svecop grid real))
 
 (define-1vec-dispatch !1v- 1vecop -)
 (define-1vec-dispatch !1v/ 1vecop /)
@@ -188,9 +199,9 @@
 (define-templated-dispatch !vfloor (x a &optional (divisor 1))
   ((vec-type 0 real) round floor))
 (define-templated-dispatch !vround (x a &optional (divisor 1))
-  ((vec-type real) round round))
+  ((vec-type 0 real) round round))
 (define-templated-dispatch !vceiling (x a &optional (divisor 1))
-  ((vec-type real) round ceiling))
+  ((vec-type 0 real) round ceiling))
 (define-templated-dispatch vpnorm (a p)
   ((vec-type real) pnorm))
 (define-templated-dispatch !vrandom (x from to)
@@ -204,6 +215,48 @@
 (define-templated-dispatch !vrot2 (x a phi)
   ((*vec2-type 0 real) rotate2))
 
+(define-alias nv+ (a &rest v)
+  (apply #'!v+ a a v))
+(define-alias nv- (a &rest v)
+  (apply #'!v- a a v))
+(define-alias nv* (a &rest v)
+  (apply #'!v* a a v))
+(define-alias nv/ (a &rest v)
+  (apply #'!v/ a a v))
+(define-alias nvmin (a &rest v)
+  (apply #'!vmin a a v))
+(define-alias nvmax (a &rest v)
+  (apply #'!vmax a a v))
+(define-alias nvunit (a)
+  (!v/ a a (v2norm a)))
+(define-alias nvunit* (a)
+  (let ((length (v2norm a)))
+    (if (= 0 length) a (!v/ a a length))))
+(define-alias nvabs (v)
+  (!vabs v v))
+(define-alias nvmod (v modulus)
+  (!2vmod v v modulus))
+(define-alias nvfloor (v &optional (d 1))
+  (!vfloor v v d))
+(define-alias nvceiling (v &optional (d 1))
+  (!vceiling v v d))
+(define-alias nvround (v &optional (d 1))
+  (!vround v v d))
+(define-alias nvlimit (v limit)
+  (!vlimit v v limit))
+(define-alias nvrot (v axis phi)
+  (!vrot v v axis phi))
+(define-alias nvrotv (v by)
+  (!vrot v v #.(vec 1 0 0) (vx by))
+  (!vrot v v #.(vec 0 1 0) (vy by))
+  (!vrot v v #.(vec 0 0 1) (vz by)))
+(define-alias nvrot2 (v phi)
+  (!vrot2 v v phi))
+(define-alias nvalign (v grid)
+  (!valign v v grid))
+(define-alias nvorder (v fields)
+  (!vorder v v fields))
+
 (define-alias vincf (a &optional (d 1))
   (!2v+ a a d))
 (define-alias vdecf (a &optional (d 1))
@@ -215,9 +268,9 @@
 (define-alias v1- (a)
   (v- a 1))
 (define-alias vunit (a)
-  (v/ a (vlength a)))
+  (v/ a (v2norm a)))
 (define-alias vunit* (a)
-  (let ((len (vlength a)))
+  (let ((len (v2norm a)))
     (if (= 0 len) (vcopy a) (v/ a len))))
 (define-alias vscale (a s)
   (let ((x (vunit a)))
@@ -226,5 +279,4 @@
   (let ((a (/ (v. a b)
               (v2norm a)
               (v2norm b))))
-    (acos (the (#.*float-type* -1f0 +1f0)
-               (clamp -1 a +1)))))
+    (acos (clamp -1 a +1))))
