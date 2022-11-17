@@ -15,7 +15,10 @@
                   :alias (list i f))))
 
 (defmacro do-vec-combinations (template &rest other-template-args)
-  `(do-combinations ,template ,@other-template-args (2 3 4) (f32 f64 u32 i32)))
+  `(do-combinations ,template ,@other-template-args (2 3 4) (#-3d-vectors-no-f32 f32
+                                                             #-3d-vectors-no-f64 f64
+                                                             #-3d-vectors-no-u32 u32
+                                                             #-3d-vectors-no-i32 i32)))
 
 (do-vec-combinations define-vec)
 
@@ -100,10 +103,10 @@
          ((real ,(type 3) null null) ,(type 4)
           (,(constructor 4) (,type a) (,(place 3 'x) b) (,(place 3 'y) b) (,(place 3 'z) b)))))))
 
-(define-vec-constructors f32)
-(define-vec-constructors f64)
-(define-vec-constructors u32)
-(define-vec-constructors i32)
+#-3d-vectors-no-f32 (define-vec-constructors f32)
+#-3d-vectors-no-f64 (define-vec-constructors f64)
+#-3d-vectors-no-u32 (define-vec-constructors u32)
+#-3d-vectors-no-i32 (define-vec-constructors i32)
 
 (defmacro define-vec-accessor (name i)
   (let ((instances (loop for instance in (instances 'vec-type)
