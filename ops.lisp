@@ -9,7 +9,7 @@
 ;;;; Required OPS:
 ;; [ ] with-vecX
 ;; [ ] vsetf
-;; [ ] v= v/= v< v> v<= v>=
+;; [x] v= v/= v< v> v<= v>=
 ;; [ ] vmin vmax
 ;; [x] vdistance vsqrdistance
 ;; [x] vlength vsqrlength
@@ -68,6 +68,62 @@
      ((vec-type real) svecreduce and ,op real)
      ((vec-type 0) 2vecreduce and ,op)))
 
+(defmacro define-vec-reductor (name 2-op &optional 1-op)
+  `(progn
+     (defun ,name (target value &rest values)
+       (cond ((null values)
+              ,(if 1-op
+                   `(,1-op target value)
+                   `(v<- target value)))
+             ((null (cdr values))
+              (,2-op target value (first values)))
+             (T
+              (,2-op target value (first values))
+              (dolist (value (rest values) target)
+                (,2-op target target value)))))
+
+     (define-compiler-macro ,name (target value &rest values)
+       (cond ((null values)
+              ,(if 1-op
+                   ``(,',1-op ,target ,value)
+                   ``(v<- ,target ,value)))
+             ((null (cdr values))
+              `(,',2-op ,target ,value ,(first values)))
+             (T
+              (let ((targetg (gensym "TARGET")))
+                `(let ((,targetg ,target))
+                   (,',2-op ,targetg ,value ,(first values))
+                   ,@(loop for value in (rest values)
+                           collect `(,',2-op ,targetg ,targetg ,value)))))))))
+
+(defmacro define-value-reductor (name 2-op comb identity)
+  `(progn
+     (defun ,name (value &rest values)
+       (cond ((null values)
+              ,identity)
+             ((null (cdr values))
+              (,2-op value (first values)))
+             (T
+              (let* ((previous (first values))
+                     (result (,2-op value previous)))
+                (dolist (value (rest values) result)
+                  (setf result (,comb result (,2-op previous value)))
+                  (setf previous value))))))
+
+     (define-compiler-macro ,name (value &rest values)
+       (cond ((null values)
+              ,identity)
+             ((null (cdr values))
+              `(,',2-op ,value ,(first values)))
+             (T
+              (let ((previous (gensym "PREVIOUS"))
+                    (next (gensym "NEXT")))
+                `(let ((,previous ,value))
+                   (,',comb ,@(loop for value in values
+                                    collect `(let ((,next ,value))
+                                               (prog1 (,',2-op ,previous ,next)
+                                                 (setf ,previous ,next))))))))))))
+
 (define-2vec-dispatch +)
 (define-2vec-dispatch -)
 (define-2vec-dispatch *)
@@ -86,12 +142,27 @@
 (define-1vec-dispatch !vabs 1vecop abs)
 (define-1vec-dispatch v<- 1vecop identity)
 
+;; FIXME: These do NOT work correctly for singles followed by vecs
 (define-veccomp-dispatch =)
 (define-veccomp-dispatch /=)
 (define-veccomp-dispatch <)
 (define-veccomp-dispatch <=)
 (define-veccomp-dispatch >)
 (define-veccomp-dispatch >=)
+
+(define-vec-reductor !v+ !2v+)
+(define-vec-reductor !v* !2v*)
+(define-vec-reductor !v- !2v- !1v-)
+(define-vec-reductor !v/ !2v/ !1v/)
+(define-vec-reductor !vmin !2vmin)
+(define-vec-reductor !vmax !2vmax)
+
+(define-value-reductor v= 2v= and T)
+(define-value-reductor v/= 2v/= and T)
+(define-value-reductor v< 2v< and T)
+(define-value-reductor v<= 2v<= and T)
+(define-value-reductor v> 2v> and T)
+(define-value-reductor v>= 2v>= and T)
 
 (define-templated-dispatch v. (a b)
   ((vec-type 0) 2vecreduce + *))
@@ -132,11 +203,6 @@
   ((*vec3-type 0 0 real) rotate))
 (define-templated-dispatch !vrot2 (x a phi)
   ((*vec2-type 0 real) rotate2))
-
-;; (define-right-reductor v+ 2v+)
-;; (define-right-reductor v- 2v- 1v- v+)
-;; (define-right-reductor v* 2v*)
-;; (define-right-reductor v/ 2v/ 1v/ v*)
 
 (define-alias vincf (a &optional (d 1))
   (!2v+ a a d))

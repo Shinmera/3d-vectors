@@ -242,52 +242,6 @@
                           collect `(,(mapcar #'lisp-type type) T
                                     (,(apply #'compose-name #\/ template full-template-args) ,@(lambda-list-variables args)))))))
 
-(defmacro define-right-reductor (name 2-op &optional 1-op (rest-op name))
-  `(progn
-     (defun ,name (value &rest values)
-       (cond ((null values)
-              ,(if 1-op
-                   `(,1-op value)
-                   'value))
-             ((null (cdr values))
-              (,2-op value (first values)))
-             (T
-              (,2-op value (reduce #',rest-op values)))))
-
-     (define-compiler-macro ,name (value &rest values)
-       (cond ((null values)
-              ,(if 1-op
-                   ``(,',1-op ,value)
-                   'value))
-             ((null (cdr values))
-              `(,',2-op ,value ,(first values)))
-             (T
-              `(,',2-op ,value (,',rest-op ,@values)))))))
-
-(defmacro define-left-reductor (name 2-op &optional 1-op)
-  `(progn
-     (defun ,name (value &rest values)
-       (cond ((null values)
-              ,(if 1-op
-                   `(,1-op value)
-                   'value))
-             ((null (cdr values))
-              (,2-op value (first values)))
-             (T
-              (loop for other in values
-                    do (setf value (,2-op value other))
-                    finally (return value)))))
-
-     (define-compiler-macro ,name (value &rest values)
-       (cond ((null values)
-              ,(if 1-op
-                   ``(,',1-op ,value)
-                   'value))
-             ((null (cdr values))
-              `(,',2-op ,value ,(first values)))
-             (T
-              `(,',name (,',2-op ,value ,(first values)) ,@(rest values)))))))
-
 (defmacro define-alias (fun args &body expansion)
   `(progn
      (declaim (inline ,fun))
