@@ -288,6 +288,17 @@
                     collect `(,<t> ,s)))
       a)))
 
+(define-template apply <s> <t> (x a f)
+  (let ((type (type-instance 'vec-type <s> <t>)))
+    `((declare (type ,(lisp-type type) x a)
+               (type (function (,<t>) T) f)
+               (return-type ,(lisp-type type))
+               inline)
+      (psetf ,@(loop for i from 0 below <s>
+                     collect `(,(place type i) x)
+                     collect `(,<t> (funcall f (,(place type i) a)))))
+      x)))
+
 (do-vec-combinations define-2vecop (+ - * / min max mod))
 (do-vec-combinations define-svecop (+ - * / min max mod grid) (<t> real))
 (do-vec-combinations define-1vecop (- / abs identity))
@@ -312,3 +323,4 @@
 (do-vec-combinations define-cartesian)
 (do-vec-combinations define-polar)
 (do-vec-combinations define-setf)
+(do-vec-combinations define-apply)

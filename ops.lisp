@@ -8,7 +8,7 @@
 
 ;;;; Required OPS:
 ;; [x] with-vec
-;; [ ] vapply
+;; [x] vapply
 ;; [ ] swizzle
 ;; [x] vsetf
 ;; [x] v= v/= v< v> v<= v>=
@@ -240,6 +240,8 @@
 (define-templated-dispatch !vpolar (x a)
   ((*vec2-type 0) polar)
   ((*vec3-type 0) polar))
+(define-templated-dispatch !vapply (x a f)
+  ((vec-type 0 function) apply))
 
 (define-simple-alias v+ (v &rest others))
 (define-simple-alias v- (v &rest others))
@@ -261,6 +263,8 @@
 (define-simple-alias vpolar (v))
 (define-simple-alias vlerp (from to tt))
 (define-simple-alias vrand (v var))
+(define-pure-alias vapply (v func) !vapply)
+(define-modifying-alias vapplyf (v func) !vapply)
 
 (define-alias vunit (a)
   (!v/ (vzero a) a (v2norm a)))
