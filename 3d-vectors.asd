@@ -19,6 +19,7 @@
                (:file "templates")
                (:file "types")
                (:file "raw-ops")
+               (:file "ops")
                (:file "documentation"))
   :depends-on (:documentation-utils)
   :in-order-to ((asdf:test-op (asdf:test-op :3d-vectors-test))))

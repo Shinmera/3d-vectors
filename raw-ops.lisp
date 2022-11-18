@@ -116,15 +116,17 @@
                                (lerp (,(place type i) from) (,(place type i) to) tt))))
       x)))
 
-(define-template random <s> <t> (x from to)
+(define-template random <s> <t> (x a var)
   (let ((type (type-instance 'vec-type <s> <t>)))
-    `((declare (type ,(lisp-type type) x from to)
+    `((declare (type ,(lisp-type type) x a var)
                (return-type ,(lisp-type type)))
-      (psetf ,@(loop for i from 0 below <s>
-                     collect `(,(place type i) x)
-                     collect `(let ((lo (,(place type i) from))
-                                    (hi (,(place type i) to)))
-                                (+ lo (random (- hi lo))))))
+      (flet ((random* (x var)
+               (if (= 0.0 var)
+                   x
+                   (+ x (- (random var) (/ var 2f0))))))
+        (psetf ,@(loop for i from 0 below <s>
+                       collect `(,(place type i) x)
+                       collect `(random* (,(place type i) a) (,(place type i) var)))))
       x)))
 
 (define-template round <op> <s> <t> (x a divisor)
@@ -243,6 +245,49 @@
                (,(place type 1) x) (,<t> (+ (* (,(place type 0) a) sin) (* (,(place type 1) a) cos))))
         x))))
 
+(define-template cartesian <s> <t> (x a)
+  (let ((type (type-instance 'vec-type <s> <t>)))
+    `((declare (type ,(lisp-type type) x a)
+               (return-type ,(lisp-type type)))
+      (let ((l (,(place type 0) a))
+            (p (,(place type 1) a)))
+        ,(case <s>
+           (2 `(setf (,(place type 0) x) (,<t> (* l (cos p)))
+                     (,(place type 1) x) (,<t> (* l (sin p)))))
+           (3 `(let ((d (,(place type 2) a)))
+                 (setf (,(place type 0) x) (,<t> (* l (cos p) (sin d)))
+                       (,(place type 1) x) (,<t> (* l (sin p) (sin d)))
+                       (,(place type 2) x) (,<t> (* l (cos d))))))
+           (T (error 'template-unfulfillable))))
+      x)))
+
+(define-template polar <s> <t> (x a)
+  (let ((type (type-instance 'vec-type <s> <t>)))
+    `((declare (type ,(lisp-type type) x a)
+               (return-type ,(lisp-type type)))
+      (let ((len (,(compose-name #\/ '1vecreduce 'sqrt+ 'sqr <s> <t>) a))
+            (atan (atan (,(place type 1) a) (,(place type 0) a))))
+        ,(case <s>
+           (2 `(setf (,(place type 0) x) (,<t> len)
+                     (,(place type 1) x) (,<t> atan)))
+           (3 `(let ((d (,(place type 2) a)))
+                 (setf (,(place type 0) x) (,<t> len)
+                       (,(place type 1) x) (,<t> atan)
+                       (,(place type 2) x) (,<t> (/ len (,(place type 2) a))))))
+           (T (error 'template-unfulfillable))))
+      x)))
+
+(declaim (inline vpolar))
+(declaim (ftype (function (vec) vec) vpolar))
+(define-ofun vpolar (vec)
+  (etypecase vec
+    (vec2 (vec2 (vlength vec)
+                (atan (vy vec) (vx vec))))
+    (vec3 (let ((len (vlength vec)))
+            (vec3 len
+                  (atan (vy vec) (vx vec))
+                  (acos (/ len (vz vec))))))))
+
 (do-vec-combinations define-2vecop (+ - * / min max mod))
 (do-vec-combinations define-svecop (+ - * / min max mod grid) (<t> real))
 (do-vec-combinations define-1vecop (- / abs identity))
@@ -264,6 +309,8 @@
 (do-vec-combinations define-cross)
 (do-vec-combinations define-rotate)
 (do-vec-combinations define-rotate2)
+(do-vec-combinations define-cartesian)
+(do-vec-combinations define-polar)
 ;; FIXME: Macro expanders for the order functions
 
 ;;;; Required RAW OPS:
@@ -287,6 +334,6 @@
 ;; [x] vrot vrot2
 ;; [x] vrand
 ;; [x] valign
-;; [ ] vcartesian vpolar
+;; [x] vcartesian vpolar
 ;; [x] vorder
 ;; [x] swizzle
