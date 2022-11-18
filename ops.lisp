@@ -8,7 +8,7 @@
 
 ;;;; Required OPS:
 ;; [ ] with-vecX
-;; [ ] vsetf
+;; [x] vsetf
 ;; [x] v= v/= v< v> v<= v>=
 ;; [x] vmin vmax
 ;; [x] vdistance vsqrdistance
@@ -169,6 +169,9 @@
 (define-1vec-dispatch !1v/ 1vecop /)
 (define-1vec-dispatch !vabs 1vecop abs)
 (define-1vec-dispatch v<- 1vecop identity)
+
+(define-templated-dispatch vsetf (a x y &optional z w)
+  ((vec-type T T T) setf))
 
 ;; FIXME: These do NOT work correctly for singles followed by vecs
 (define-veccomp-dispatch =)

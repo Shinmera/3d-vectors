@@ -277,16 +277,16 @@
            (T (error 'template-unfulfillable))))
       x)))
 
-(declaim (inline vpolar))
-(declaim (ftype (function (vec) vec) vpolar))
-(define-ofun vpolar (vec)
-  (etypecase vec
-    (vec2 (vec2 (vlength vec)
-                (atan (vy vec) (vx vec))))
-    (vec3 (let ((len (vlength vec)))
-            (vec3 len
-                  (atan (vy vec) (vx vec))
-                  (acos (/ len (vz vec))))))))
+(define-template setf <s> <t> (a x y z w)
+  (let ((type (type-instance 'vec-type <s> <t>)))
+    `((declare (type ,(lisp-type type) a)
+               (return-type ,(lisp-type type))
+               inline)
+      (setf ,@(loop for i from 0 below <s>
+                    for s in '(x y z w)
+                    collect `(,(place type i) a)
+                    collect `(,<t> ,s)))
+      a)))
 
 (do-vec-combinations define-2vecop (+ - * / min max mod))
 (do-vec-combinations define-svecop (+ - * / min max mod grid) (<t> real))
@@ -311,29 +311,4 @@
 (do-vec-combinations define-rotate2)
 (do-vec-combinations define-cartesian)
 (do-vec-combinations define-polar)
-;; FIXME: Macro expanders for the order functions
-
-;;;; Required RAW OPS:
-;; [x] v= v/= v< v> v<= v>=
-;; [x] vmin vmax
-;; [x] vdistance vsqrdistance
-;; [x] vlength vsqrlength
-;; [x] v2norm v1norm vinorm vpnorm
-;; [?] vapply
-;; [x] v<-
-;; [x] v+ v- v* v/
-;; [x] v.
-;; [x] vc
-;; [/] vangle
-;; [x] vabs
-;; [x] vmod
-;; [/] vunit vunit*
-;; [/] vscale
-;; [x] vfloor vceiling vround
-;; [x] vclamp vlimit vlerp
-;; [x] vrot vrot2
-;; [x] vrand
-;; [x] valign
-;; [x] vcartesian vpolar
-;; [x] vorder
-;; [x] swizzle
+(do-vec-combinations define-setf)
