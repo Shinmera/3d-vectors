@@ -7,7 +7,7 @@
 (in-package #:org.shirakumo.fraf.vectors)
 
 ;;;; Required OPS:
-;; [ ] with-vecX
+;; [x] with-vec
 ;; [ ] vapply
 ;; [ ] swizzle
 ;; [x] vsetf

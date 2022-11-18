@@ -154,3 +154,16 @@
                         collect `((,(lisp-type instance)) ,(lisp-type instance) (,(constructor instance) ,@(loop for place in (places instance)
                                                                                                                  collect `(,(third place) 0))))))))
   (emit))
+
+(defmacro with-vec ((x y &optional z w) val &body body)
+  (let ((valg (gensym "VAL"))
+        (vars (delete-if #'null (list x y z w))))
+    (flet ((bind (type)
+             `(symbol-macrolet ,(loop for (name place) in (places type)
+                                      for var in vars
+                                      collect `(,var (,place ,valg)))
+                ,@body)))
+      `(let ((,valg ,val))
+         (etypecase ,valg
+           ,@(loop for type in (instances 'vec-type)
+                   collect `(,(lisp-type type) ,(bind type))))))))
