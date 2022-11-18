@@ -24,7 +24,6 @@
 
 ;; This reads like a war zone
 ;; FIXME: The deftransforms on REALs clobber more precise type information.
-;; FIXME: Convert between vecs
 (defmacro define-vec-constructors (type)
   (flet ((constructor (size)
            (constructor (type-instance 'vec-type size type)))
