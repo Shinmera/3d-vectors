@@ -8,13 +8,14 @@
 
 ;;;; Required OPS:
 ;; [ ] with-vecX
+;; [ ] vapply
+;; [ ] swizzle
 ;; [x] vsetf
 ;; [x] v= v/= v< v> v<= v>=
 ;; [x] vmin vmax
 ;; [x] vdistance vsqrdistance
 ;; [x] vlength vsqrlength
 ;; [x] v2norm v1norm vinorm vpnorm
-;; [ ] vapply
 ;; [x] v<-
 ;; [x] v+ v- v* v/
 ;; [x] v1+ v1-
@@ -34,7 +35,6 @@
 ;; [x] valign
 ;; [x] vcartesian vpolar
 ;; [x] vorder
-;; [ ] swizzle
 ;; [x] nvmin nvmax
 ;; [x] nv+ nv- nv* nv/
 ;; [x] nvabs
