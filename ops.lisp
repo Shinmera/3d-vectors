@@ -231,7 +231,6 @@
 (define-pure-alias vapply (v func) !vapply)
 (define-modifying-alias vapplyf (v func) !vapply)
 
-;; FIXME: This is not correct. The returned vec should have the length of the fields.
 (define-alias vorder (v fields)
   `(,'!vload (vlike ,v (length (string ,fields))) ,v ,fields))
 (define-modifying-alias nvorder (v fields) !vload)

@@ -1,0 +1,53 @@
+# About 3d-vectors
+This is a library for vector math in 3D space. It contains most of the vector operations one would usually expect out of such a library and offers them both in non-modifying and modifying versions where applicable. It also supports efficient dispatch elimination, inlining, and type propagation on SBCL.
+
+## How To
+Load it through ASDF or Quicklisp
+
+:: common lisp
+(ql:quickload :3d-vectors)
+(use-package :org.shirakumo.fraf.vectors)
+::
+
+Create a vector:
+
+:: common lisp
+(vec 0 0 0)
+::
+
+This will create a 3D single-float vector. You can also create double-float vectors with ``dvec`` and integer vectors with ``ivec``. Where sensible, operations should accept real numbers for convenience. All vector operations are prefixed with a v to allow importing the package without conflicts.
+
+:: common lisp
+(v+ (vec 1 2 3) 4 5 6)
+::
+
+3d-vectors implements pretty much all vector operations you might need, including comparators, dot and cross product, rotation, and more. There's also modifying variants of all operators, which have the same name, except they are prefixed with an ``n``. Finally, there's targeted variants, which write the result into a supplied target vector -- these are prefixed with an ``!``.
+
+:: common lisp
+(let ((v (vec 0 0 0)))
+  (nv* (nv+ v (vec 1 2 3)) 3)
+  v)
+::
+
+``vec``s are dumpable, meaning you can insert them as literals into your code and they will be properly saved to and restored from a FASL. You should also be able to stack-allocate them.
+
+The type ``*vec`` includes all subtypes ``fvec``, ``dvec``, and ``ivec``, each of which in turn have arity variants of ``*vec2``, ``*vec3``, and ``*vec4``. Each of the three also has its own accessors that are suffixed with the dimension number and prefixed by the type, though the standard ``vx``, ``vy``, ``vz``, ``vw`` accessors should suffice as dispatch will be eliminated automatically whenever the type is known.
+
+While most of the operations work on all variants, you cannot mix different arities. For example, ``(v+ (vec 1 2) (vec 1 2 3))`` will signal an error. This is because it is often ambiguous and thus likely confusing as to what might happen in such a case. Should the result be upgraded to a ``vec3`` or downgraded to a ``vec2``? In order to avoid this ambiguity, it is simply left up to you to ensure proper arities.
+
+You can convert between the different vector variants by passing an instance into the constructor of another, like ``(dvec (vec 1 2 3))``. You can also do this to compose vectors of different arities: ``(vec 3 (vec 1 2) 4)``.
+
+Another convenient way to flip around different arities is swizzling: similar to the single-field accessors, there's multi-field readers that construct a new vector from the specified fields of the necessary length.
+
+:: common lisp
+(vxy (vec 1 2 3))    ; => (vec2 1 2)
+(vxy_ (vec 1 2))     ; => (vec3 1 2 0)
+(vwwx (vec 1 2 3 4)) ; => (vec3 4 4 1)
+::
+
+The _ can be used anywhere within swizzle operators in order to pad the vector with a zero. You can also use the swizzle operators as accessors to set multiple fields of a vector at once, where an underscore denotes "don't touch".
+
+## Also See
+- "3d-matrices"(https://shinmera.github.io/3d-matrices) for matrix operations
+- "3d-quaternions"(https://shinmera.github.io/3d-quaternions) for quaternions
+- "3d-transforms"(https://shinmera.github.io/3d-transforms) for affine transforms
