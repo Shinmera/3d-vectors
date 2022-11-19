@@ -86,14 +86,14 @@
          (,<red> ,@(loop for i from 0 below <s>
                          collect `(,<comb> (,(place type i) a) s))))))))
 
-(define-template clamp <s> <t> (x lower a upper)
+(define-template clamp <st> <s> <t> (x lower a upper)
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) a x)
-               (type ,<t> lower upper)
+               (type ,(case <st> (<t> <t>) (T <st>)) lower upper)
                (return-type ,(lisp-type type)))
       (psetf ,@(loop for i from 0 below <s>
                      collect `(,(place type i) x)
-                     collect `(clamp lower (,(place type i) a) upper)))
+                     collect `(clamp (,<t> lower) (,(place type i) a) (,<t> upper))))
       x)))
 
 (define-template limit <s> <t> (x a l)
@@ -185,6 +185,7 @@
                   (#\W ,(maybe-place 3))
                   (#\_ (,(place-type type 0) 0)))))
       `((declare (type ,(lisp-type type) a)
+                 (type symbol fields)
                  (type *vec x)
                  (return-type *vec))
         (let* ((fields (string fields))
@@ -304,13 +305,15 @@
 (do-vec-combinations define-1vecop (- / abs identity))
 (do-vec-combinations define-2vecreduce (and) (= /= < <= >= >) boolean)
 (do-vec-combinations define-svecreduce (and) (= /= < <= >= >) (<t> real) boolean)
+(do-vec-combinations define-2vecreduce (or) (/=) boolean)
+(do-vec-combinations define-svecreduce (or) (/=) (<t> real) boolean)
 (do-vec-combinations define-2vecreduce (+) (*) <t>) ; dot
 (do-vec-combinations define-2vecreduce (sqrt+) (sqr2) float) ; dist
 (do-vec-combinations define-2vecreduce (+) (sqr2) <t>) ; sqrdist
 (do-vec-combinations define-1vecreduce (+ max) (abs) <t>) ; 1norm inorm
 (do-vec-combinations define-1vecreduce (sqrt+) (sqr) float) ; 2norm
 (do-vec-combinations define-1vecreduce (+) (sqr) <t>) ; sqrlen
-(do-vec-combinations define-clamp)
+(do-vec-combinations define-clamp (<t> real))
 (do-vec-combinations define-limit)
 (do-vec-combinations define-lerp)
 (do-vec-combinations define-round (floor round ceiling))

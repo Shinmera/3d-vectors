@@ -88,6 +88,7 @@
    #:vfloor
    #:vceiling
    #:vround
+   #:vc
    #:vlimit
    #:vrot
    #:vrot2
@@ -110,6 +111,7 @@
    #:nvfloor
    #:nvceiling
    #:nvround
+   #:nvc
    #:nvlimit
    #:nvrot
    #:nvrot2

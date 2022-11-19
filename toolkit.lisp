@@ -135,7 +135,7 @@
   (expt a 2))
 
 (defun sqr2 (a b)
-  (+ (expt a 2) (expt b 2)))
+  (expt (- a b) 2))
 
 (defun grid (a g)
   (* g (floor (+ a (/ g 2)) g)))

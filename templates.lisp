@@ -232,6 +232,8 @@
                     (list type))
                    ((listp type)
                     (loop for sub in type append (expand-type sub)))
+                   ((vectorp type)
+                    (list type))
                    ((subtypep type 'template-type)
                     (instances type))
                    (T
@@ -240,8 +242,10 @@
       ;; Perform back substitution of positional types
       (dolist (types expanded expanded)
         (loop for cons on types
-              do (when (integerp (car cons))
-                   (setf (car cons) (nth (car cons) types))))))))
+              do (cond ((integerp (car cons))
+                        (setf (car cons) (nth (car cons) types)))
+                       ((vectorp (car cons))
+                        (setf (car cons) (nth (aref (car cons) 1) (template-arguments (nth (aref (car cons) 0) types)))))))))))
 
 (defun determine-template-arguments (types)
   (remove-duplicates
@@ -253,9 +257,16 @@
   `(define-type-dispatch ,name ,args
      ,@(loop for (types template . template-args) in expansions
              append (loop for type in (enumerate-template-type-combinations types)
-                          for full-template-args = (append template-args (determine-template-arguments type))
-                          collect `(,(mapcar #'lisp-type type) T
-                                    (,(apply #'compose-name #\/ template full-template-args) ,@(lambda-list-variables args)))))))
+                          for full-template-args = (append (loop for arg in template-args
+                                                                 collect (if (vectorp arg)
+                                                                             (nth (aref arg 0) type)
+                                                                             arg))
+                                                           (determine-template-arguments type))
+                          collect (if (listp template)
+                                      `(,(mapcar #'lisp-type type) T
+                                        ,template ,@template-args)
+                                      `(,(mapcar #'lisp-type type) T
+                                        (,(apply #'compose-name #\/ template full-template-args) ,@(lambda-list-variables args))))))))
 
 ;; NOTE: this does not work with &REST as we cannot automatically deal with
 ;;       conversion or deconversion of variadic arguments as a list in the
