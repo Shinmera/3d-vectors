@@ -23,7 +23,19 @@
    #:*vec4
    #:vcopy
    #:vzero
-   #:with-vec)
+   #:with-vec
+   #:+vx2+
+   #:+vy2+
+   #:+vx3+
+   #:+vy3+
+   #:+vz3+
+   #:+vx4+
+   #:+vy4+
+   #:+vz4+
+   #:+vw4+
+   #:+vx+
+   #:+vy+
+   #:+vz+)
   ;; ops.lisp
   (:export
    #:vsetf

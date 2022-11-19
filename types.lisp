@@ -171,3 +171,27 @@
          (etypecase ,valg
            ,@(loop for type in (instances 'vec-type)
                    collect `(,(lisp-type type) ,(bind type))))))))
+
+(defmacro define-vector-constant (name x y &optional z w)
+  (let ((z (when z (list z))) (w (when w (list w))))
+    `(defconstant ,name (cond ((not (boundp ',name))
+                               (vec ,x ,y ,@z ,@w))
+                              ((v= (symbol-value ',name) (vec ,x ,y ,@z ,@w))
+                               (symbol-value ',name))
+                              (T (error "Attempting to redefine constant vector ~a with value ~a to ~a."
+                                        ',name (symbol-value ',name) (vec ,x ,y ,@z ,@w)))))))
+(define-vector-constant +vx2+ 1 0)
+(define-vector-constant +vy2+ 0 1)
+
+(define-vector-constant +vx3+ 1 0 0)
+(define-vector-constant +vy3+ 0 1 0)
+(define-vector-constant +vz3+ 0 0 1)
+
+(define-vector-constant +vx4+ 1 0 0 0)
+(define-vector-constant +vy4+ 0 1 0 0)
+(define-vector-constant +vz4+ 0 0 1 0)
+(define-vector-constant +vw4+ 0 0 0 1)
+
+(define-vector-constant +vx+ 1 0 0)
+(define-vector-constant +vy+ 0 1 0)
+(define-vector-constant +vz+ 0 0 1)
