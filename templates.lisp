@@ -49,13 +49,13 @@
   (loop for (names place) in (places type)
         do (when (find qualifier names)
              (return place))
-        finally (error 'no-such-place :qualifier qualifier :qualifier type)))
+        finally (error 'no-such-place :qualifier qualifier :type type)))
 
 (defmethod place-type ((type template-type) qualifier)
   (loop for (names place type) in (places type)
         do (when (find qualifier names)
              (return type))
-        finally (error 'no-such-place :qualifier qualifier :qualifier type)))
+        finally (error 'no-such-place :qualifier qualifier :type type)))
 
 (defmethod instances ((type class))
   (instances (allocate-instance type)))
@@ -254,19 +254,20 @@
          append (template-arguments type))))
 
 (defmacro define-templated-dispatch (name args &body expansions)
-  `(define-type-dispatch ,name ,args
-     ,@(loop for (types template . template-args) in expansions
-             append (loop for type in (enumerate-template-type-combinations types)
-                          for full-template-args = (append (loop for arg in template-args
-                                                                 collect (if (vectorp arg)
-                                                                             (nth (aref arg 0) type)
-                                                                             arg))
-                                                           (determine-template-arguments type))
-                          collect (if (listp template)
-                                      `(,(mapcar #'lisp-type type) T
-                                        ,template ,@template-args)
-                                      `(,(mapcar #'lisp-type type) T
-                                        (,(apply #'compose-name #\/ template full-template-args) ,@(lambda-list-variables args))))))))
+  (flet ((full-template-args (type template-args)
+           (append (loop for arg in template-args
+                         collect (if (vectorp arg)
+                                     (nth (aref arg 0) type)
+                                     arg))
+                   (determine-template-arguments type))))
+    `(define-type-dispatch ,name ,args
+       ,@(loop for (types template . template-args) in expansions
+               append (loop for type in (enumerate-template-type-combinations types)
+                            collect (if (listp template)
+                                        `(,(mapcar #'lisp-type type) T
+                                          (,(apply #'compose-name #\/ (car template) (full-template-args type (rest template))) ,@template-args))
+                                        `(,(mapcar #'lisp-type type) T
+                                          (,(apply #'compose-name #\/ template (full-template-args type template-args)) ,@(lambda-list-variables args)))))))))
 
 ;; NOTE: this does not work with &REST as we cannot automatically deal with
 ;;       conversion or deconversion of variadic arguments as a list in the

@@ -194,8 +194,7 @@
   ((vec-type 0 0) limit))
 (define-templated-dispatch !vlerp (x from to tt)
   ((vec-type 0 0 single-float) lerp)
-  ;((vec-type 0 0 real) (!vlerp x from to (float tt 0f0)))
-  )
+  ((vec-type 0 0 real) (lerp) x from to (float tt 0f0)))
 (define-templated-dispatch !vfloor (x a &optional (divisor 1))
   ((vec-type 0 real) round floor))
 (define-templated-dispatch !vround (x a &optional (divisor 1))
@@ -205,7 +204,9 @@
 (define-templated-dispatch !vrand (x a var)
   ((vec-type 0 0) random))
 (define-templated-dispatch !vorder (x a fields)
-  ((vec-type 0 symbol) order))
+  ((*vec vec-type symbol) load))
+(define-templated-dispatch !vstore (x a fields)
+  ((vec-type *vec symbol) store))
 (define-templated-dispatch !vc (x a b)
   ((*vec3-type 0 0) cross))
 (define-templated-dispatch !vrot (x a axis phi)
@@ -244,6 +245,11 @@
   ((vec-type real) pnorm))
 (define-templated-dispatch vsqrlength (a)
   ((vec-type) 1vecreduce + sqr))
+(define-templated-dispatch vlike (a s)
+  ((fvec (integer 2 4)) like f32)
+  ((dvec (integer 2 4)) like f64)
+  ((uvec (integer 2 4)) like u32)
+  ((ivec (integer 2 4)) like i32))
 
 (define-rest-alias v+ (v &rest others))
 (define-rest-alias v- (v &rest others))
@@ -271,7 +277,7 @@
 
 ;; FIXME: This is not correct. The returned vec should have the length of the fields.
 (define-alias vorder (v fields)
-  `(,'!vorder (vzero ,v) ,v ,fields))
+  `(,'!vorder (vlike ,v (length (string ,fields))) ,v ,fields))
 (define-modifying-alias nvorder (v fields) !vorder)
 
 (define-alias (setf vorder) (source target fields)
@@ -338,7 +344,7 @@
                                (define-alias ,name (v)
                                  `(vorder ,v ',',(apply #'compose-name NIL comps)))
                                (define-alias (setf ,name) (s v)
-                                 `(!vorder ,v ,s ',',(apply #'compose-name NIL comps))))))))
+                                 `(!vstore ,v ,s ',',(apply #'compose-name NIL comps))))))))
 
 (define-all-swizzlers 2)
 (define-all-swizzlers 3)
