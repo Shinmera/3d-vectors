@@ -86,6 +86,8 @@
                         collect `(,alias ,name ,type))
          ,@template-args)
 
+       (export '(,name ,(compose-name #\- name 'copy) ,(compose-name #\- name 'p)
+                 ,@(loop for (name) in fields)))
        (declaim (inline ,constructor ,@(mapcar #'first fields)))
        (defstruct (,name (:constructor ,constructor
                              ,(loop for (name type alias) in fields collect name))
@@ -100,6 +102,7 @@
                 :stream stream))
 
        (defmethod make-load-form ((,name ,name) &optional env)
+         (declare (ignore env))
          (list ',constructor ,@(loop for field in fields collect `(,(first field) ,name)))))))
 
 (defmacro define-template-type (name template-args name-constructor &body body)
