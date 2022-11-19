@@ -47,6 +47,13 @@ Another convenient way to flip around different arities is swizzling: similar to
 
 The _ can be used anywhere within swizzle operators in order to pad the vector with a zero. You can also use the swizzle operators as accessors to set multiple fields of a vector at once, where an underscore denotes "don't touch".
 
+To reduce duplication in the documentation, only the single-float variants of the type-specific functions have docstrings. The analogue of each holds for the other element-types. For the operations, only the pure variant of each operator has a docstring. The others hold analoguely as follows every time:
+
+- ``nvOP`` The first vector passed is used for the operation and the result is stored within it.
+- ``!vOP`` The result of the operation is stored into the first vector.
+
+``nvOP``s are just aliases for ``!vOP``s underneath, duplicating the first argument. ``vOP``s are just aliases for ``!vOP``s, too, using ``vzero`` to construct a fresh copy of the first vector to store the result in.
+
 ## Also See
 - "3d-matrices"(https://shinmera.github.io/3d-matrices) for matrix operations
 - "3d-quaternions"(https://shinmera.github.io/3d-quaternions) for quaternions

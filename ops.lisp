@@ -119,14 +119,6 @@
 (define-2vec-dispatch max)
 (define-2vec-dispatch mod)
 
-(define-templated-dispatch !valign (x a grid)
-  ((vec-type 0 #(0 1)) svecop grid <t>)
-  ((vec-type 0 real) svecop grid real))
-
-(define-1vec-dispatch !1v- 1vecop -)
-(define-1vec-dispatch !1v/ 1vecop /)
-(define-1vec-dispatch !vabs 1vecop abs)
-
 ;; FIXME: These do NOT work correctly for singles followed by vecs
 (define-veccomp-dispatch =)
 (define-veccomp-dispatch /= or)
@@ -139,6 +131,14 @@
   ((vec-type T T T) setf))
 
 (define-1vec-dispatch v<- 1vecop identity)
+
+(define-templated-dispatch !valign (x a grid)
+  ((vec-type 0 #(0 1)) svecop grid <t>)
+  ((vec-type 0 real) svecop grid real))
+
+(define-1vec-dispatch !1v- 1vecop -)
+(define-1vec-dispatch !1v/ 1vecop /)
+(define-1vec-dispatch !vabs 1vecop abs)
 
 (define-vec-reductor !v+ !2v+)
 (define-vec-reductor !v* !2v*)
