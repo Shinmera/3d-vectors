@@ -6,47 +6,6 @@
 
 (in-package #:org.shirakumo.fraf.vectors)
 
-;;;; Required OPS:
-;; [x] with-vec
-;; [x] vapply
-;; [ ] swizzle
-;; [x] vsetf
-;; [x] v= v/= v< v> v<= v>=
-;; [x] vmin vmax
-;; [x] vdistance vsqrdistance
-;; [x] vlength vsqrlength
-;; [x] v2norm v1norm vinorm vpnorm
-;; [x] v<-
-;; [x] v+ v- v* v/
-;; [x] v1+ v1-
-;; [x] vincf vdecf
-;; [x] v.
-;; [x] vc
-;; [x] vangle
-;; [x] vabs
-;; [x] vmod
-;; [x] vunit vunit*
-;; [x] vscale
-;; [x] vfloor vceiling vround
-;; [x] vclamp vlerp
-;; [x] vlimit
-;; [x] vrot vrotv vrot2
-;; [x] vrand
-;; [x] valign
-;; [x] vcartesian vpolar
-;; [x] vorder
-;; [x] nvmin nvmax
-;; [x] nv+ nv- nv* nv/
-;; [x] nvabs
-;; [x] nvmod
-;; [x] nvfloor nvceiling nvround
-;; [x] nvclamp nvlerp
-;; [x] nvlimit
-;; [x] nvrot nvrotv nvrot2
-;; [x] nvalign
-;; [x] nvcartesian nvpolar
-;; [x] nvorder
-
 (defmacro define-2vec-dispatch (op)
   `(define-templated-dispatch ,(compose-name NIL '!2v op) (x a b)
      ((vec-type 0 #(0 1)) svecop ,op <t>)
@@ -190,8 +149,6 @@
 (define-templated-dispatch !vclamp (x low a up)
   ((vec-type #(0 1) 0 #(0 1)) clamp <t>)
   ((vec-type real 0 real) clamp real))
-(define-templated-dispatch !vlimit (x a limit)
-  ((vec-type 0 0) limit))
 (define-templated-dispatch !vlerp (x from to tt)
   ((vec-type 0 0 single-float) lerp)
   ((vec-type 0 0 real) (lerp) x from to (float tt 0f0)))
@@ -203,7 +160,7 @@
   ((vec-type 0 real) round ceiling))
 (define-templated-dispatch !vrand (x a var)
   ((vec-type 0 0) random))
-(define-templated-dispatch !vorder (x a fields)
+(define-templated-dispatch !vload (x a fields)
   ((*vec vec-type symbol) load))
 (define-templated-dispatch !vstore (x a fields)
   ((vec-type *vec symbol) store))
@@ -263,7 +220,6 @@
 (define-simple-alias vfloor (v &optional (d 1)))
 (define-simple-alias vceiling (v &optional (d 1)))
 (define-simple-alias vround (v &optional (d 1)))
-(define-simple-alias vlimit (v limit))
 (define-simple-alias vc (a b))
 (define-simple-alias vrot (v axis phi))
 (define-simple-alias vrot2 (v phi))
@@ -277,11 +233,11 @@
 
 ;; FIXME: This is not correct. The returned vec should have the length of the fields.
 (define-alias vorder (v fields)
-  `(,'!vorder (vlike ,v (length (string ,fields))) ,v ,fields))
-(define-modifying-alias nvorder (v fields) !vorder)
+  `(,'!vload (vlike ,v (length (string ,fields))) ,v ,fields))
+(define-modifying-alias nvorder (v fields) !vload)
 
 (define-alias (setf vorder) (source target fields)
-  `(!vorder ,target ,source ,fields))
+  `(!vload ,target ,source ,fields))
 
 (define-alias vunit (a)
   `(!v/ (vzero ,a) ,a (v2norm ,a)))

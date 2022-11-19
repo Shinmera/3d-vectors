@@ -50,13 +50,13 @@
    #:!vmin
    #:!vmax
    #:!vclamp
-   #:!vlimit
    #:!vlerp
    #:!vfloor
    #:!vround
    #:!vceiling
    #:!vrand
-   #:!vorder
+   #:!vload
+   #:!vstore
    #:!vc
    #:!vrot
    #:!vrot2
@@ -89,7 +89,6 @@
    #:vceiling
    #:vround
    #:vc
-   #:vlimit
    #:vrot
    #:vrot2
    #:valign
@@ -112,7 +111,6 @@
    #:nvceiling
    #:nvround
    #:nvc
-   #:nvlimit
    #:nvrot
    #:nvrot2
    #:nvalign

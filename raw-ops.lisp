@@ -96,15 +96,6 @@
                      collect `(clamp (,<t> lower) (,(place type i) a) (,<t> upper))))
       x)))
 
-(define-template limit <s> <t> (x a l)
-  (let ((type (type-instance 'vec-type <s> <t>)))
-    `((declare (type ,(lisp-type type) a x l)
-               (return-type ,(lisp-type type)))
-      (psetf ,@(loop for i from 0 below <s>
-                     collect `(,(place type i) x)
-                     collect `(clamp (- (,(place type i) l)) (,(place type i) a) (+ (,(place type i) l)))))
-      x)))
-
 (define-template lerp <s> <t> (x from to tt)
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) x from to)
@@ -349,7 +340,6 @@
 (do-vec-combinations define-1vecreduce (sqrt+) (sqr) float) ; 2norm
 (do-vec-combinations define-1vecreduce (+) (sqr) <t>) ; sqrlen
 (do-vec-combinations define-clamp (<t> real))
-(do-vec-combinations define-limit)
 (do-vec-combinations define-lerp)
 (do-vec-combinations define-round (floor round ceiling))
 (do-vec-combinations define-pnorm)
