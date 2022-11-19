@@ -6,6 +6,9 @@
 
 (in-package #:org.shirakumo.fraf.vectors)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  #-3d-vectors-u32 (push :3d-vectors-no-u32 *features*))
+
 #+3d-vectors-debug
 (defun dbg (format &rest values)
   (format *debug-io* "~&3DV-DBG: ~?~%" format values))
