@@ -6,6 +6,14 @@
 
 (in-package #:org.shirakumo.fraf.vectors)
 
+#+3d-vectors-debug
+(defun dbg (format &rest values)
+  (format *debug-io* "~&3DV-DBG: ~?~%" format values))
+#-3d-vectors-debug
+(defun dbg (format &rest values)
+  (declare (ignore format values))
+  NIL)
+
 (defun enlist (list-ish &rest els)
   (if (listp list-ish) list-ish (list* list-ish els)))
 

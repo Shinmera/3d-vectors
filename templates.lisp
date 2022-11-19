@@ -203,12 +203,24 @@
        (sb-c:defknown ,name ,(loop for arg in args collect (if (find arg lambda-list-keywords) arg '*)) *
            (sb-c:any)
          :overwrite-fndb-silently T)
+       #++
+       (sb-c:defoptimizer (,name sb-c:derive-type) (,args)
+         (let ,(loop for arg in argvars
+                     collect `(,arg (if ,arg (sb-c::lvar-type ,arg) (sb-c::specifier-type 'NULL))))
+           (cond ,@(loop for (argtypes rettype) in expansions
+                         collect `((and ,@(loop for argtype in argtypes
+                                                for arg in argvars
+                                                for i from 0
+                                                collect `(sb-c::csubtypep ,arg (sb-c::specifier-type ',argtype))))
+                                   (sb-c::specifier-type ',rettype)))
+                 (T (sb-c::specifier-type T)))))
+       ;; NOTE: The defoptimizer isn't needed, SBCL can derive the type on its own just fine.
        #+sbcl
        ,@(loop for (type result . body) in expansions
                ;; FIXME: this is not great. optional placement should be better.
                for opttypes = (remove 'null type)
                collect `(sb-c:deftransform ,name (,args ,opttypes)
-                          (print '(expanding ,name ,opttypes))
+                          (dbg "Expanding transform (~a~{ ~a~})" ',name ',opttypes)
                           ',@body)))))
 
 (defun enumerate-template-type-combinations (types)
@@ -242,8 +254,24 @@
                           collect `(,(mapcar #'lisp-type type) T
                                     (,(apply #'compose-name #\/ template full-template-args) ,@(lambda-list-variables args)))))))
 
+;; NOTE: this does not work with &REST as we cannot automatically deal with
+;;       conversion or deconversion of variadic arguments as a list in the
+;;       plain defun.
 (defmacro define-alias (fun args &body expansion)
-  `(progn
-     (declaim (inline ,fun))
-     (defun ,fun ,args
-       ,@expansion)))
+  (let* ((argvars (lambda-list-variables args))
+         (arggens (loop for var in argvars collect (gensym (string var)))))
+    `(progn
+       (macrolet ((thunk ()
+                    (let ,(loop for arg in argvars
+                                collect `(,arg ',arg))
+                      ,@expansion)))
+         (defun ,fun ,args
+           (thunk)))
+       (define-compiler-macro ,fun ,args
+         `(let ,(list ,@(loop for arg in argvars
+                              for gen in arggens
+                              collect `(list ',gen ,arg)))
+            ,(let ,(loop for arg in argvars
+                         for gen in arggens
+                         collect `(,arg ',gen))
+               ,@expansion))))))
