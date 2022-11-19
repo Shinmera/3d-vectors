@@ -23,19 +23,7 @@
    #:*vec4
    #:vcopy
    #:vzero
-   #:with-vec
-   #:+vx2+
-   #:+vy2+
-   #:+vx3+
-   #:+vy3+
-   #:+vz3+
-   #:+vx4+
-   #:+vy4+
-   #:+vz4+
-   #:+vw4+
-   #:+vx+
-   #:+vy+
-   #:+vz+)
+   #:with-vec)
   ;; ops.lisp
   (:export
    #:vsetf
@@ -134,4 +122,17 @@
    #:v1-
    #:vangle
    #:vclamp
-   #:nvclamp))
+   #:nvclamp
+   ;; Swizzlers are exported by autogen.
+   #:+vx2+
+   #:+vy2+
+   #:+vx3+
+   #:+vy3+
+   #:+vz3+
+   #:+vx4+
+   #:+vy4+
+   #:+vz4+
+   #:+vw4+
+   #:+vx+
+   #:+vy+
+   #:+vz+))
