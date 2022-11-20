@@ -128,7 +128,7 @@
 (define-veccomp-dispatch >=)
 
 (define-templated-dispatch vsetf (a x y &optional z w)
-  ((vec-type T T T) setf))
+  ((vec-type real real T T) setf))
 
 (define-1vec-dispatch v<- 1vecop identity)
 
@@ -177,7 +177,8 @@
   ((*vec2-type 0) polar)
   ((*vec3-type 0) polar))
 (define-templated-dispatch !vapply (x a f)
-  ((vec-type 0 function) apply))
+  ((vec-type 0 function) apply)
+  ((vec-type 0 symbol) (apply) x a (fdefinition f)))
 
 (define-value-reductor v= 2v= and T)
 (define-value-reductor v/= 2v/= and T)
