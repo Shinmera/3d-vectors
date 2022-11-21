@@ -149,7 +149,7 @@
                      maximize (ecase (char-downcase char)
                                 (#\_ 0) (#\x 1) (#\y 2) (#\z 3) (#\w 4)))))
     (when (< <s> arity)
-      (error 'template-unfulfillable))
+      (template-unfulfillable))
     `((declare (type ,(lisp-type type) a)
                (type ,(lisp-type target) x)
                (return-type ,(lisp-type target)))
@@ -215,7 +215,7 @@
         x))))
 
 (define-template cross <s> <t> (x a b)
-  (when (/= 3 <s>) (error 'template-unfulfillable))
+  (when (/= 3 <s>) (template-unfulfillable))
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) x a b)
                (return-type ,(lisp-type type)))
@@ -231,7 +231,7 @@
         x))))
 
 (define-template rotate <s> <t> (x a axis phi)
-  (when (/= 3 <s>) (error 'template-unfulfillable))
+  (when (/= 3 <s>) (template-unfulfillable))
   (let ((type (type-instance 'vec-type <s> <t>)))
     (flet ((arith (field)
              `(+ (* (,field a) cos)
@@ -252,7 +252,7 @@
           x)))))
 
 (define-template rotate2 <s> <t> (x a phi)
-  (when (/= 2 <s>) (error 'template-unfulfillable))
+  (when (/= 2 <s>) (template-unfulfillable))
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) x a)
                (type single-float phi)
@@ -276,7 +276,7 @@
                  (setf (,(place type 0) x) (,<t> (* l (cos p) (sin d)))
                        (,(place type 1) x) (,<t> (* l (sin p) (sin d)))
                        (,(place type 2) x) (,<t> (* l (cos d))))))
-           (T (error 'template-unfulfillable))))
+           (T (template-unfulfillable))))
       x)))
 
 (define-template polar <s> <t> (x a)
@@ -292,7 +292,7 @@
                  (setf (,(place type 0) x) (,<t> len)
                        (,(place type 1) x) (,<t> atan)
                        (,(place type 2) x) (,<t> (/ len (,(place type 2) a))))))
-           (T (error 'template-unfulfillable))))
+           (T (template-unfulfillable))))
       x)))
 
 (define-template setf <s> <t> (a x y z w)

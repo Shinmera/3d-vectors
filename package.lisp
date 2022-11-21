@@ -5,7 +5,8 @@
 |#
 
 (defpackage #:org.shirakumo.fraf.vectors
-  (:use #:cl)
+  (:use #:cl #:org.shirakumo.type-templates)
+  (:import-from #:org.shirakumo.type-templates #:dbg #:lambda-list-variables)
   ;; types.lisp
   (:export
    ;; Much is omitted, exported by autogen.
