@@ -174,17 +174,17 @@
 (macrolet ((emit ()
              `(define-type-dispatch vzero (a)
                 ,@(loop for instance in (instances 'vec-type)
-                        collect `((,(lisp-type instance)) ,(lisp-type instance) (,(constructor instance) ,@(loop for place in (places instance)
-                                                                                                                 collect `(,(third place) 0))))))))
+                        collect `((,(lisp-type instance)) ,(lisp-type instance) (,(constructor instance) ,@(loop for slot in (slots instance)
+                                                                                                                 collect `(,(lisp-type slot) 0))))))))
   (emit))
 
 (defmacro with-vec ((x y &optional z w) val &body body)
   (let ((valg (gensym "VAL"))
         (vars (delete-if #'null (list x y z w))))
     (flet ((bind (type)
-             `(symbol-macrolet ,(loop for (name place) in (places type)
+             `(symbol-macrolet ,(loop for slot in (slots type)
                                       for var in vars
-                                      collect `(,var (,place ,valg)))
+                                      collect `(,var (,(accessor slot) ,valg)))
                 ,@body)))
       `(let ((,valg ,val))
          (etypecase ,valg
