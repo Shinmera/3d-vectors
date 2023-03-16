@@ -59,6 +59,7 @@ If the vector does not have a particular field, the variable is initialized to 0
   (nv- "Same as -, but modifies the first vector. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.")
   (nv* "Same as *, but modifies the first vector. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.")
   (nv/ "Same as /, but modifies the first vector. Accepts REALs or VECs as arguments, where REALs are used for each component of the vector.")
+  (nv+* "Same as nv+, but scales the added vector by a scalar.")
 
   (v1+ "Same as 1+, but returns a new vector with each component increased by 1.")
   (v1- "Same as 1-, but returns a new vector with each component decreased by 1.")

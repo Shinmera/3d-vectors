@@ -355,6 +355,24 @@
 (define-nvecop nv* *)
 (define-nvecop nv/ /)
 
+(declaim (inline nv+*))
+(define-ofun nv+* (target vector scalar)
+  (let ((scalar (ensure-float scalar)))
+    (etypecase target
+      (vec2
+       (incf (vx2 target) (* (vx2 vector) scalar))
+       (incf (vy2 target) (* (vy2 vector) scalar)))
+      (vec3
+       (incf (vx3 target) (* (vx3 vector) scalar))
+       (incf (vy3 target) (* (vy3 vector) scalar))
+       (incf (vz3 target) (* (vz3 vector) scalar)))
+      (vec4
+       (incf (vx4 target) (* (vx4 vector) scalar))
+       (incf (vy4 target) (* (vy4 vector) scalar))
+       (incf (vz4 target) (* (vz4 vector) scalar))
+       (incf (vw4 target) (* (vw4 vector) scalar)))))
+  target)
+
 (declaim (inline v1+))
 (declaim (ftype (function (vec) vec) v1+))
 (define-ofun v1+ (v)
