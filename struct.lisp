@@ -27,11 +27,11 @@
 (define-ptrfun vec2-ptr vec2 %vx2)
 
 (declaim (inline vec2))
-(declaim (ftype (function (real real) vec2) vec2))
-(define-ofun vec2 (x y)
+(declaim (ftype (function (&optional real real) vec2) vec2))
+(define-ofun vec2 (&optional (x 0.0) (y 0.0))
   (%vec2 (ensure-float x) (ensure-float y)))
 
-(define-compiler-macro vec2 (&environment env x y)
+(define-compiler-macro vec2 (&environment env &optional (x 0.0) (y 0.0))
   `(%vec2 ,(ensure-float-param x env)
           ,(ensure-float-param y env)))
 
@@ -62,11 +62,11 @@
 (define-ptrfun vec3-ptr vec3 %vx3)
 
 (declaim (inline vec3))
-(declaim (ftype (function (real real real) vec3) vec3))
-(define-ofun vec3 (x y z)
+(declaim (ftype (function (&optional real real real) vec3) vec3))
+(define-ofun vec3 (&optional (x 0.0) (y 0.0) (z 0.0))
   (%vec3 (ensure-float x) (ensure-float y) (ensure-float z)))
 
-(define-compiler-macro vec3 (&environment env x y z)
+(define-compiler-macro vec3 (&environment env &optional (x 0.0) (y 0.0) (z 0.0))
   `(%vec3 ,(ensure-float-param x env)
           ,(ensure-float-param y env)
           ,(ensure-float-param z env)))
@@ -101,11 +101,11 @@
 (define-ptrfun vec4-ptr vec4 %vx4)
 
 (declaim (inline vec4))
-(declaim (ftype (function (real real real real) vec4) vec4))
-(define-ofun vec4 (x y z w)
+(declaim (ftype (function (&optional real real real real) vec4) vec4))
+(define-ofun vec4 (&optional (x 0.0) (y 0.0) (z 0.0) (w 0.0))
   (%vec4 (ensure-float x) (ensure-float y) (ensure-float z) (ensure-float w)))
 
-(define-compiler-macro vec4 (&environment env x y z w)
+(define-compiler-macro vec4 (&environment env &optional (x 0.0) (y 0.0) (z 0.0) (w 0.0))
   `(%vec4 ,(ensure-float-param x env)
           ,(ensure-float-param y env)
           ,(ensure-float-param z env)
