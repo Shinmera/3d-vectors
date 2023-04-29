@@ -12,7 +12,7 @@
         for f in '(x y z w)
         do (field (compose-name NIL (type-prefix <t>) 'v f <s>)
                   :type <t>
-                  :alias (list i f))))
+                  :alias (list i f (intern (string f) "KEYWORD")))))
 
 (defmacro do-vec-combinations (template &rest other-template-args)
   `(do-combinations ,template ,@other-template-args (2 3 4) (#-3d-vectors-no-f32 f32
