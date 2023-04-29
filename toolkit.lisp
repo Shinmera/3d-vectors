@@ -22,8 +22,10 @@
   (ldb (byte 32 0) (truncate value)))
 
 (define-type-with-converter i32 (signed-byte 32) (value)
-  (check-type value (signed-byte 32))
-  value)
+  (let ((i (truncate value)))
+    (if (<= 0 i)
+        (ldb (byte 31 0) i)
+        (- (ldb (byte 32 0) (- i))))))
 
 (defun type-prefix (type)
   (ecase type
