@@ -13,9 +13,9 @@
                (return-type ,(lisp-type type))
                inline)
       (psetf ,@(loop for i from 0 below <s>
-                     collect `(,(place type i) x)
-                     collect `(,<op> (,(place type i) a)
-                                     (,(place type i) b))))
+                     collect (place-form type i 'x)
+                     collect `(,<op> ,(place-form type i 'a)
+                                     ,(place-form type i 'b))))
       x)))
 
 ;; Element-wise scalar operation
@@ -27,8 +27,8 @@
                inline)
       (let ((s (,<t> s)))
         (psetf ,@(loop for i from 0 below <s>
-                       collect `(,(place type i) x)
-                       collect `(,<op> (,(place type i) a) s))))
+                       collect (place-form type i 'x)
+                       collect `(,<op> ,(place-form type i 'a) s))))
       x)))
 
 ;; Element-wise operation
@@ -38,8 +38,8 @@
                (return-type ,(lisp-type type))
                inline)
       (psetf ,@(loop for i from 0 below <s>
-                     collect `(,(place type i) x)
-                     collect `(,<op> (,(place type i) a))))
+                     collect (place-form type i 'x)
+                     collect `(,<op> (place-form type i 'a))))
       x)))
 
 ;; Element-wise vector reduce operation
@@ -54,8 +54,8 @@
                inline)
       (,(if (member rtype '(f32 f64 i32 u32)) rtype 'progn)
        (,<red> ,@(loop for i from 0 below <s>
-                       collect `(,<comb> (,(place type i) a)
-                                         (,(place type i) b))))))))
+                       collect `(,<comb> ,(place-form type i 'a)
+                                         ,(place-form type i 'b))))))))
 
 ;; Element-wise reduce operation
 (define-template 1vecreduce <red> <comb> rtype <s> <t> (a)
@@ -69,7 +69,7 @@
                inline)
       (,(if (member rtype '(f32 f64 i32 u32)) rtype 'progn)
        (,<red> ,@(loop for i from 0 below <s>
-                       collect `(,<comb> (,(place type i) a))))))))
+                       collect `(,<comb> ,(place-form type i 'a))))))))
 
 (define-template svecreduce <red> <comb> <st> rtype <s> <t> (a s)
   (let ((type (type-instance 'vec-type <s> <t>))
@@ -84,7 +84,7 @@
       (let ((s (,<t> s)))
         (,(if (member rtype '(f32 f64 i32 u32)) rtype 'progn)
          (,<red> ,@(loop for i from 0 below <s>
-                         collect `(,<comb> (,(place type i) a) s))))))))
+                         collect `(,<comb> ,(place-form type i 'a) s))))))))
 
 (define-template clamp <st> <s> <t> (x lower a upper)
   (let ((type (type-instance 'vec-type <s> <t>)))
@@ -92,8 +92,8 @@
                (type ,(case <st> (<t> <t>) (T <st>)) lower upper)
                (return-type ,(lisp-type type)))
       (psetf ,@(loop for i from 0 below <s>
-                     collect `(,(place type i) x)
-                     collect `(clamp (,<t> lower) (,(place type i) a) (,<t> upper))))
+                     collect (place-form type i 'x)
+                     collect `(clamp (,<t> lower) ,(place-form type i 'a) (,<t> upper))))
       x)))
 
 (define-template lerp <s> <t> (x from to tt)
@@ -102,9 +102,9 @@
                (type single-float tt)
                (return-type ,(lisp-type type)))
       (psetf ,@(loop for i from 0 below <s>
-                     collect `(,(place type i) x)
+                     collect (place-form type i 'x)
                      collect `(,(case <t> ((f32 f64) <t>) (T 'floor))
-                               (lerp (,(place type i) from) (,(place type i) to) tt))))
+                               (lerp ,(place-form type i 'from) ,(place-form type i 'to) tt))))
       x)))
 
 (define-template random <s> <t> (x a var)
@@ -116,8 +116,8 @@
                    x
                    (+ x (- (random var) (/ var 2f0))))))
         (psetf ,@(loop for i from 0 below <s>
-                       collect `(,(place type i) x)
-                       collect `(random* (,(place type i) a) (,(place type i) var)))))
+                       collect (place-form type i 'x)
+                       collect `(random* ,(place-form type i 'a) ,(place-form type i 'var)))))
       x)))
 
 (define-template round <op> <s> <t> (x a divisor)
@@ -129,8 +129,8 @@
     `((declare (type ,(lisp-type type) x a)
                (return-type ,(lisp-type type)))
       (psetf ,@(loop for i from 0 below <s>
-                     collect `(,(place type i) x)
-                     collect `(,op (,(place type i) a) divisor)))
+                     collect (place-form type i 'x)
+                     collect `(,op ,(place-form type i 'a) divisor)))
       x)))
 
 (define-template pnorm <s> <t> (a p)
@@ -139,7 +139,7 @@
                (type ,<t> p)
                (return-type ,(case <t> (f32 'f32) (f64 'f64) (T 'real))))
       (expt (+ ,@(loop for i from 0 below <s>
-                       collect `(expt (abs (,(place type i) a)) p)))
+                       collect `(expt (abs ,(place-form type i 'a)) p)))
             (/ p)))))
 
 (define-template swizzle <fields> <s> <t> (x a)
@@ -156,10 +156,10 @@
       (psetf ,@(loop for name across (string <fields>)
                      for field = (intern (string name))
                      for i from 0 below <s>
-                     collect `(,(place type i) x)
+                     collect (place-form type i 'x)
                      collect (if (eql field '_)
                                  `(,<t> 0)
-                                 `(,(place type field) a))))
+                                 (place-form type field 'a))))
       x)))
 
 (define-template load <s> <t> (x a fields)
@@ -167,7 +167,7 @@
     (labels ((maybe-place (n)
                (if (<= <s> n)
                    `(error "Bad swizzle spec for vector with size ~a: ~a" ,<s> fields)
-                   `(,(place type n) a)))
+                   (place-form type n 'a)))
              (source (n)
                `(ecase (char fields ,n)
                   (#\X ,(maybe-place 0))
@@ -193,7 +193,7 @@
     (labels ((maybe-place (n value)
                (if (<= <s> n)
                    `(error "Bad swizzle spec for vector with size ~a: ~a" ,<s> fields)
-                   `(setf (,(place type n) x) ,value)))
+                   `(setf ,(place-form type n 'x) ,value)))
              (source (n value)
                `(ecase (char fields ,n)
                   (#\X ,(maybe-place 0 value))
@@ -219,24 +219,24 @@
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) x a b)
                (return-type ,(lisp-type type)))
-      (let ((ax (,(place type 0) a))
-            (ay (,(place type 1) a))
-            (az (,(place type 2) a))
-            (bx (,(place type 0) b))
-            (by (,(place type 1) b))
-            (bz (,(place type 2) b)))
-        (setf (,(place type 0) x) (- (* ay bz) (* az by))
-              (,(place type 1) x) (- (* az bx) (* ax bz))
-              (,(place type 2) x) (- (* ax by) (* ay bx)))
+      (let ((ax ,(place-form type 0 'a))
+            (ay ,(place-form type 1 'a))
+            (az ,(place-form type 2 'a))
+            (bx ,(place-form type 0 'b))
+            (by ,(place-form type 1 'b))
+            (bz ,(place-form type 2 'b)))
+        (setf ,(place-form type 0 'x) (- (* ay bz) (* az by))
+              ,(place-form type 1 'x) (- (* az bx) (* ax bz))
+              ,(place-form type 2 'x) (- (* ax by) (* ay bx)))
         x))))
 
 (define-template rotate <s> <t> (x a axis phi)
   (when (/= 3 <s>) (template-unfulfillable))
   (let ((type (type-instance 'vec-type <s> <t>)))
-    (flet ((arith (field)
-             `(+ (* (,field a) cos)
-                 (* (,field c) sin)
-                 (* (,field axis) d (- 1 cos)))))
+    (flet ((arith (qualifier)
+             `(+ (* ,(place-form type qualifier 'a) cos)
+                 (* ,(place-form type qualifier 'c) sin)
+                 (* ,(place-form type qualifier 'axis) d (- 1 cos)))))
       `((declare (type ,(lisp-type type) x a axis)
                  (type single-float phi)
                  (return-type ,(lisp-type type)))
@@ -246,9 +246,9 @@
                (d (,(compose-name #\/ '2vecreduce '+ '* <s> <t>) axis a)))
           (declare (dynamic-extent c))
           (,(compose-name #\/ 'cross <s> <t>) c axis a)
-          (psetf (,(place type 0) x) (,<t> ,(arith (place type 0)))
-                 (,(place type 1) x) (,<t> ,(arith (place type 1)))
-                 (,(place type 2) x) (,<t> ,(arith (place type 2))))
+          (psetf ,(place-form type 0 'x) (,<t> ,(arith 0))
+                 ,(place-form type 1 'x) (,<t> ,(arith 1))
+                 ,(place-form type 2 'x) (,<t> ,(arith 2)))
           x)))))
 
 (define-template rotate2 <s> <t> (x a phi)
@@ -259,23 +259,23 @@
                (return-type ,(lisp-type type)))
       (let ((sin (sin phi))
             (cos (cos phi)))
-        (psetf (,(place type 0) x) (,<t> (- (* (,(place type 0) a) cos) (* (,(place type 1) a) sin)))
-               (,(place type 1) x) (,<t> (+ (* (,(place type 0) a) sin) (* (,(place type 1) a) cos))))
+        (psetf ,(place-form type 0 'x) (,<t> (- (* ,(place-form type 0 'a) cos) (* ,(place-form type 1 'a) sin)))
+               ,(place-form type 1 'x) (,<t> (+ (* ,(place-form type 0 'a) sin) (* ,(place-form type 1 'a) cos))))
         x))))
 
 (define-template cartesian <s> <t> (x a)
   (let ((type (type-instance 'vec-type <s> <t>)))
     `((declare (type ,(lisp-type type) x a)
                (return-type ,(lisp-type type)))
-      (let ((l (,(place type 0) a))
-            (p (,(place type 1) a)))
+      (let ((l ,(place-form type 0 'a))
+            (p ,(place-form type 1 'a)))
         ,(case <s>
-           (2 `(setf (,(place type 0) x) (,<t> (* l (cos p)))
-                     (,(place type 1) x) (,<t> (* l (sin p)))))
-           (3 `(let ((d (,(place type 2) a)))
-                 (setf (,(place type 0) x) (,<t> (* l (cos p) (sin d)))
-                       (,(place type 1) x) (,<t> (* l (sin p) (sin d)))
-                       (,(place type 2) x) (,<t> (* l (cos d))))))
+           (2 `(setf ,(place-form type 0 'x) (,<t> (* l (cos p)))
+                     ,(place-form type 1 'x) (,<t> (* l (sin p)))))
+           (3 `(let ((d ,(place-form type 2 'a)))
+                 (setf ,(place-form type 0 'x) (,<t> (* l (cos p) (sin d)))
+                       ,(place-form type 1 'x) (,<t> (* l (sin p) (sin d)))
+                       ,(place-form type 2 'x) (,<t> (* l (cos d))))))
            (T (template-unfulfillable))))
       x)))
 
@@ -284,14 +284,14 @@
     `((declare (type ,(lisp-type type) x a)
                (return-type ,(lisp-type type)))
       (let ((len (,(compose-name #\/ '1vecreduce 'sqrt+ 'sqr <s> <t>) a))
-            (atan (atan (,(place type 1) a) (,(place type 0) a))))
+            (atan (atan ,(place-form type 1 'a) ,(place-form type 0 'a))))
         ,(case <s>
-           (2 `(setf (,(place type 0) x) (,<t> len)
-                     (,(place type 1) x) (,<t> atan)))
-           (3 `(let ((d (,(place type 2) a)))
-                 (setf (,(place type 0) x) (,<t> len)
-                       (,(place type 1) x) (,<t> atan)
-                       (,(place type 2) x) (,<t> (/ len (,(place type 2) a))))))
+           (2 `(setf ,(place-form type 0 'x) (,<t> len)
+                     ,(place-form type 1 'x) (,<t> atan)))
+           (3 `(let ((d ,(place-form type 2 'a)))
+                 (setf ,(place-form type 0 'x) (,<t> len)
+                       ,(place-form type 1 'x) (,<t> atan)
+                       ,(place-form type 2 'x) (,<t> (/ len ,(place-form type 2 'a))))))
            (T (template-unfulfillable))))
       x)))
 
@@ -302,7 +302,7 @@
                inline)
       (setf ,@(loop for i from 0 below <s>
                     for s in '(x y z w)
-                    collect `(,(place type i) a)
+                    collect (place-form type i 'a)
                     collect `(,<t> ,s)))
       a)))
 
@@ -313,8 +313,8 @@
                (return-type ,(lisp-type type))
                inline)
       (psetf ,@(loop for i from 0 below <s>
-                     collect `(,(place type i) x)
-                     collect `(,<t> (funcall f (,(place type i) a)))))
+                     collect (place-form type i 'x)
+                     collect `(,<t> (funcall f ,(place-form type i 'a)))))
       x)))
 
 (define-template like <t> (a s)
