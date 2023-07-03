@@ -1,9 +1,3 @@
-#|
- This file is a part of 3d-vectors
- (c) 2015 Shirakumo http://tymoon.eu (shinmera@tymoon.eu)
- Author: Nicolas Hafner <shinmera@tymoon.eu>
-|#
-
 (in-package #:org.shirakumo.flare.vector)
 
 (defmacro with-vec2 ((x y) val &body body)
