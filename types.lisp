@@ -61,7 +61,7 @@
 (define-vec-accessor vz 2)
 (define-vec-accessor vw 3)
 
-#-3d-vectors-no-f32 (define-type-alias vec vec2 vec3 vec4)
+#-3d-vectors-no-f32 (define-type-alias fvec vec2 vec3 vec4)
 #-3d-vectors-no-f64 (define-type-alias dvec dvec2 dvec3 dvec4)
 #-3d-vectors-no-i32 (define-type-alias ivec ivec2 ivec3 ivec4)
 #-3d-vectors-no-u32 (define-type-alias uvec uvec2 uvec3 uvec4)
@@ -75,6 +75,7 @@
   #-3d-vectors-no-f32 vec2 #-3d-vectors-no-f64 dvec2 #-3d-vectors-no-i32 ivec2 #-3d-vectors-no-u32 uvec2
   #-3d-vectors-no-f32 vec3 #-3d-vectors-no-f64 dvec3 #-3d-vectors-no-i32 ivec3 #-3d-vectors-no-u32 uvec3
   #-3d-vectors-no-f32 vec4 #-3d-vectors-no-f64 dvec4 #-3d-vectors-no-i32 ivec4 #-3d-vectors-no-u32 uvec4)
+(deftype vec () 'fvec)
 
 (define-alias vec-p (thing)
   `(typep ,thing '*vec))
