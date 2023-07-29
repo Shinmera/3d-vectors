@@ -66,3 +66,7 @@
     (f64 (+ (f64 low) (random (- (f64 high) (f64 low)))))
     (u32 (+ (u32 low) (random (- (u32 high) (u32 low)))))
     (i32 (+ (i32 low) (random (- (i32 high) (i32 low)))))))
+
+(declaim (inline ~=))
+(defun ~= (a b &optional (eps 1.0e-6))
+  (<= (abs (- a b)) eps))

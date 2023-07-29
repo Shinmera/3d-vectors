@@ -329,8 +329,8 @@
 (do-vec-combinations define-2vecop (+ - * / min max mod))
 (do-vec-combinations define-svecop (+ - * / min max mod grid) (<t> real))
 (do-vec-combinations define-1vecop (- / abs identity))
-(do-vec-combinations define-2vecreduce (and) (= /= < <= >= >) boolean)
-(do-vec-combinations define-svecreduce (and) (= /= < <= >= >) (<t> real) boolean)
+(do-vec-combinations define-2vecreduce (and) (= ~= /= < <= >= >) boolean)
+(do-vec-combinations define-svecreduce (and) (= ~= /= < <= >= >) (<t> real) boolean)
 (do-vec-combinations define-2vecreduce (or) (/=) boolean)
 (do-vec-combinations define-svecreduce (or) (/=) (<t> real) boolean)
 (do-vec-combinations define-2vecreduce (+) (*) <t>) ; dot
