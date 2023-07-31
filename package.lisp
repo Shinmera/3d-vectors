@@ -14,6 +14,7 @@
    #:vy
    #:vz
    #:vw
+   #:varr
    #:fvec
    #:dvec
    #:ivec

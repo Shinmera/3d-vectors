@@ -61,6 +61,21 @@
 (define-vec-accessor vz 2)
 (define-vec-accessor vw 3)
 
+(defmacro define-vec-accessor (name slot)
+  (let ((instances (instances 'vec-type)))
+    `(progn
+       (define-type-dispatch ,name (vec)
+         ,@(loop for type in instances
+                 collect `((,(lisp-type type)) ,(place-type type slot)
+                           ,(place-form type slot 'vec))))
+       (define-type-dispatch (setf ,name) (value vec)
+         ,@(loop for type in instances
+                 unless (read-only (slot type slot))
+                 collect `((,(place-type type slot) ,(lisp-type type)) ,(place-type type slot)
+                           (setf ,(place-form type slot 'vec) value)))))))
+
+(define-vec-accessor varr arr)
+
 #-3d-vectors-no-f32 (define-type-alias fvec vec2 vec3 vec4)
 #-3d-vectors-no-f64 (define-type-alias dvec dvec2 dvec3 dvec4)
 #-3d-vectors-no-i32 (define-type-alias ivec ivec2 ivec3 ivec4)
