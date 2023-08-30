@@ -1,3 +1,5 @@
+# This library has been superseded by [3d-math](https://shinmera.github.io/3d-math)
+
 ## About 3d-vectors
 This is a library for vector math in 3D space. It contains most of the vector operations one would usually expect out of such a library and offers them both in non-modifying and modifying versions where applicable. It also tries to be efficient where plausible. Each vector is made up of `float`s, which by default are `single-float`s, as they do not require value boxing on most modern systems and compilers. Despite the name of this library, 2D and 4D vectors are supported as well.
 
