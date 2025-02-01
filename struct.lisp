@@ -18,7 +18,7 @@
 
 (define-vecx-accessor vx2 %vx2)
 (define-vecx-accessor vy2 %vy2)
-(define-ptrfun vec2-ptr vec2 %vx2)
+#+sbcl(define-ptrfun vec2-ptr vec2 %vx2)
 
 (declaim (inline vec2))
 (declaim (ftype (function (&optional real real) vec2) vec2))
@@ -53,7 +53,7 @@
 (define-vecx-accessor vx3 %vx3)
 (define-vecx-accessor vy3 %vy3)
 (define-vecx-accessor vz3 %vz3)
-(define-ptrfun vec3-ptr vec3 %vx3)
+#+sbcl(define-ptrfun vec3-ptr vec3 %vx3)
 
 (declaim (inline vec3))
 (declaim (ftype (function (&optional real real real) vec3) vec3))
@@ -92,7 +92,7 @@
 (define-vecx-accessor vy4 %vy4)
 (define-vecx-accessor vz4 %vz4)
 (define-vecx-accessor vw4 %vw4)
-(define-ptrfun vec4-ptr vec4 %vx4)
+#+sbcl(define-ptrfun vec4-ptr vec4 %vx4)
 
 (declaim (inline vec4))
 (declaim (ftype (function (&optional real real real real) vec4) vec4))

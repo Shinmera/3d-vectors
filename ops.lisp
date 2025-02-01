@@ -826,7 +826,7 @@ Note that, unlike usual SETF functions that return the value you set to, this re
                            collect `(,d (etypecase val
                                           (number
                                            (let ((val (ensure-float val)))
-                                             ,@(loop for comp in comps for i in '(x y z w)
+                                             ,@(loop for comp in comps
                                                      unless (eql comp '_)
                                                      collect `(setf ,(%vec-accessor comp d) val))))
                                           (,other-type
