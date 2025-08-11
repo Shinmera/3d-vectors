@@ -4,9 +4,9 @@
   :author "Yukari Hafner <shinmera@tymoon.eu>"
   :maintainer "Yukari Hafner <shinmera@tymoon.eu>"
   :description "Tests for the 3d-vectors system."
-  :homepage "https://Shinmera.github.io/3d-vectors/"
-  :bug-tracker "https://github.com/Shinmera/3d-vectors/issues"
-  :source-control (:git "https://github.com/Shinmera/3d-vectors.git")
+  :homepage "https://shinmera.com/docs/3d-vectors/"
+  :bug-tracker "https://shinmera.com/project/3d-vectors/issues"
+  :source-control (:git "https://shinmera.com/project/3d-vectors.git")
   :serial T
   :components ((:file "test"))
   :depends-on (:3d-vectors :parachute)
